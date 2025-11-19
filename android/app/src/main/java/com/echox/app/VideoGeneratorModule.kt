@@ -57,10 +57,17 @@ class VideoGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
                 .build()
 
             // 4. Configure Transformer
+            val outputFile = File(outputUri)
+            outputFile.parentFile?.mkdirs()
+            if (outputFile.exists()) {
+                outputFile.delete()
+            }
+            outputFile.createNewFile()
+
             val transformer = Transformer.Builder(context)
                 .addListener(object : Transformer.Listener {
                     override fun onCompleted(composition: Composition, exportResult: ExportResult) {
-                        promise.resolve(outputUri)
+                        promise.resolve(outputFile.absolutePath)
                     }
 
                     override fun onError(composition: Composition, exportResult: ExportResult, exportException: ExportException) {
@@ -70,7 +77,7 @@ class VideoGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
                 .build()
 
             // 5. Start Export
-            transformer.start(composition, outputUri)
+            transformer.start(composition, outputFile.absolutePath)
 
         } catch (e: Exception) {
             promise.reject("SETUP_ERROR", e)

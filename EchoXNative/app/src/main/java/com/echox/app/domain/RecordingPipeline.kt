@@ -25,6 +25,7 @@ class RecordingPipeline(private val context: Context) {
         val wavFile = File(context.cacheDir, "audio_${System.currentTimeMillis()}.wav")
         val videoFile = File(context.cacheDir, "preview_${System.currentTimeMillis()}.mp4")
         val frameFile = File(context.cacheDir, "frame_${System.currentTimeMillis()}.png")
+        frameFile.parentFile?.mkdirs()
 
         val durationLabel = formatDuration(durationMs)
 
@@ -45,11 +46,11 @@ class RecordingPipeline(private val context: Context) {
         )
 
         videoComposer.generateVideo(
-                imageUri = frameFile.toUri(),
-                audioUri = audioResult.toUri(),
-                outputUri = videoFile.toUri(),
-                durationMs = durationMs
-            )
+            imageUri = frameFile.toUri(),
+            audioUri = audioResult.toUri(),
+            outputFile = videoFile,
+            durationMs = durationMs
+        )
 
         return RecordingAssets(
             audioFile = audioResult,
@@ -87,10 +88,11 @@ class RecordingPipeline(private val context: Context) {
             outputFile = frameFile
         )
 
+        frameFile.parentFile?.mkdirs()
         videoComposer.generateVideo(
             imageUri = frameFile.toUri(),
             audioUri = segmentAudio.toUri(),
-            outputUri = videoFile.toUri(),
+            outputFile = videoFile,
             durationMs = segmentDurationMs
         )
 

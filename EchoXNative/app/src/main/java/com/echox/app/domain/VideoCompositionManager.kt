@@ -2,6 +2,7 @@ package com.echox.app.domain
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
@@ -11,6 +12,7 @@ import androidx.media3.transformer.EditedMediaItemSequence
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.Transformer
+import java.io.File
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -21,14 +23,14 @@ class VideoCompositionManager(private val context: Context) {
     suspend fun generateVideo(
         imageUri: Uri,
         audioUri: Uri,
-        outputUri: Uri,
+        outputFile: File,
         durationMs: Long
     ): Uri = suspendCancellableCoroutine { continuation ->
         try {
             // 1. Prepare Image MediaItem (Video Track)
             val imageItem = MediaItem.Builder()
                 .setUri(imageUri)
-                .setMimeType(MimeTypes.IMAGE_JPEG)
+                .setMimeType(MimeTypes.IMAGE_PNG)
                 .build()
 
             val imageEditedMediaItem = EditedMediaItem.Builder(imageItem)
@@ -51,7 +53,7 @@ class VideoCompositionManager(private val context: Context) {
             val transformer = Transformer.Builder(context)
                 .addListener(object : Transformer.Listener {
                     override fun onCompleted(composition: Composition, exportResult: ExportResult) {
-                        continuation.resume(outputUri)
+                        continuation.resume(outputFile.toUri())
                     }
 
                     override fun onError(
@@ -65,7 +67,13 @@ class VideoCompositionManager(private val context: Context) {
                 .build()
 
             // 5. Start Export
-            transformer.start(composition, outputUri.toString())
+            outputFile.parentFile?.mkdirs()
+            if (outputFile.exists()) {
+                outputFile.delete()
+            }
+            outputFile.createNewFile()
+
+            transformer.start(composition, outputFile.absolutePath)
 
         } catch (e: Exception) {
             continuation.resumeWithException(e)

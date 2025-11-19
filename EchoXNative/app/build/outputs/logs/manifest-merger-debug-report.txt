@@ -15,6 +15,10 @@ MERGED from [androidx.navigation:navigation-runtime:2.7.6] /Users/aban/.gradle/c
 MERGED from [androidx.navigation:navigation-common-ktx:2.7.6] /Users/aban/.gradle/caches/8.14.3/transforms/c22a31884e74d7e80985fc77572794b6/transformed/navigation-common-ktx-2.7.6/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.navigation:navigation-runtime-ktx:2.7.6] /Users/aban/.gradle/caches/8.14.3/transforms/d030ae708084cc27f4b453cf9bd9ebb4/transformed/navigation-runtime-ktx-2.7.6/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.navigation:navigation-compose:2.7.6] /Users/aban/.gradle/caches/8.14.3/transforms/b1db1a9b6c81b00f77f5967341a8655a/transformed/navigation-compose-2.7.6/AndroidManifest.xml:2:1-7:12
+MERGED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:15:1-55:12
+MERGED from [androidx.appcompat:appcompat-resources:1.6.1] /Users/aban/.gradle/caches/8.14.3/transforms/9ba7a3dc988fdd6117fb201c33b28960/transformed/appcompat-resources-1.6.1/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.appcompat:appcompat:1.6.1] /Users/aban/.gradle/caches/8.14.3/transforms/4deeef5cee3eff43ef1d74d2711ebe2a/transformed/appcompat-1.6.1/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.fragment:fragment:1.3.6] /Users/aban/.gradle/caches/8.14.3/transforms/6f1ff146ca85bd5678264dca16b5a8df/transformed/fragment-1.3.6/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.compose.foundation:foundation-layout-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/678e8661ab63f13c677be9d3691be38d/transformed/foundation-layout-release/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.animation:animation-core-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/6f0f5bb3a707d207ea03dc2dcb534a94/transformed/animation-core-release/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.animation:animation-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/b908a6610b479d992714fc05911d2049/transformed/animation-release/AndroidManifest.xml:2:1-7:12
@@ -31,7 +35,11 @@ MERGED from [androidx.compose.material:material-icons-core-android:1.6.0] /Users
 MERGED from [androidx.compose.material:material-icons-extended-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/add4bfcf9278d3a5aeb86e5963d28533/transformed/material-icons-extended-release/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.material:material-ripple-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/fbe2cc13e1b731e0571debc47079a4e9/transformed/material-ripple-release/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.foundation:foundation-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/e55f49e33b4c11b3dc3f0b8c43c0b6f2/transformed/foundation-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.emoji2:emoji2-views-helper:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/d8b7966d46234480603cc61d76339e11/transformed/emoji2-views-helper-1.3.0/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.emoji2:emoji2:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/fdb15e7cd6f4929690785027249b43ad/transformed/emoji2-1.3.0/AndroidManifest.xml:17:1-35:12
+MERGED from [androidx.loader:loader:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/731492041a31195307ec0638993128ab/transformed/loader-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0] /Users/aban/.gradle/caches/8.14.3/transforms/1bf842a7140eace10f980f442864429c/transformed/lifecycle-livedata-core-ktx-2.7.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.7.0] /Users/aban/.gradle/caches/8.14.3/transforms/ab8b90439aa4fcfb00c063c0df19d41b/transformed/lifecycle-livedata-2.7.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.lifecycle:lifecycle-process:2.7.0] /Users/aban/.gradle/caches/8.14.3/transforms/4e26bf80a1455da874b2c16b7dfafd83/transformed/lifecycle-process-2.7.0/AndroidManifest.xml:17:1-35:12
 MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.7.0] /Users/aban/.gradle/caches/8.14.3/transforms/826fea8ed2c7f2d3182ed8e86ea3eef7/transformed/lifecycle-livedata-core-2.7.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0] /Users/aban/.gradle/caches/8.14.3/transforms/11577fee091ba3f60b9f303088b364a7/transformed/lifecycle-viewmodel-savedstate-2.7.0/AndroidManifest.xml:17:1-22:12
@@ -59,9 +67,11 @@ MERGED from [androidx.media3:media3-ui:1.2.0] /Users/aban/.gradle/caches/8.14.3/
 MERGED from [androidx.recyclerview:recyclerview:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/872cd088570d82a9e756389cfc23e6dc/transformed/recyclerview-1.3.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/9a10625ccbcae89e80e52c80646d2c58/transformed/customview-poolingcontainer-1.0.0/AndroidManifest.xml:17:1-23:12
 MERGED from [androidx.core:core-ktx:1.12.0] /Users/aban/.gradle/caches/8.14.3/transforms/1ee256996b4bf81683d2b1d7a7bd13f6/transformed/core-ktx-1.12.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.browser:browser:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/1443e9c53388d98919b24538ec68567d/transformed/browser-1.3.0/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.media:media:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/caed703062fded3a927420bcb5e3f313/transformed/media-1.6.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/c9f2897e3aeae3c5d7a2183530ac3c60/transformed/drawerlayout-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/9f265a84da43336aa738ea67935150b0/transformed/viewpager-1.0.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.customview:customview:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/5eb4a481250c83ab2183ecdce6f2375f/transformed/customview-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.appcompat:appcompat-resources:1.6.1] /Users/aban/.gradle/caches/8.14.3/transforms/9ba7a3dc988fdd6117fb201c33b28960/transformed/appcompat-resources-1.6.1/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /Users/aban/.gradle/caches/8.14.3/transforms/ba3279b6b8667f86f328392f6edc11c7/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /Users/aban/.gradle/caches/8.14.3/transforms/14a1d793f0907a04e2561a76867deeaa/transformed/vectordrawable-1.1.0/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.autofill:autofill:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/2074dc7546bbee850bea73a48a5e4a19/transformed/autofill-1.0.0/AndroidManifest.xml:17:1-24:12
@@ -70,6 +80,7 @@ MERGED from [androidx.lifecycle:lifecycle-runtime:2.7.0] /Users/aban/.gradle/cac
 MERGED from [androidx.lifecycle:lifecycle-runtime-ktx:2.7.0] /Users/aban/.gradle/caches/8.14.3/transforms/2161a90271500b7b53222a91a272ae9e/transformed/lifecycle-runtime-ktx-2.7.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.compose.runtime:runtime-saveable-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/39485250280919218a19cc8b280d690f/transformed/runtime-saveable-release/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.runtime:runtime-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/63123a35d25e9efef08fccf6320aaba9/transformed/runtime-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] /Users/aban/.gradle/caches/8.14.3/transforms/7b748b618b1e20c9968b71caab78182e/transformed/security-crypto-1.1.0-alpha06/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.annotation:annotation-experimental:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/29af70de20ccc1f755b9871edc30666a/transformed/annotation-experimental-1.3.1/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.exifinterface:exifinterface:1.3.6] /Users/aban/.gradle/caches/8.14.3/transforms/2eb324d555f20226da8fc0ff079ab201/transformed/exifinterface-1.3.6/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.interpolator:interpolator:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/5e4a1a97774e86e89f9ca1ce8a00c93b/transformed/interpolator-1.0.0/AndroidManifest.xml:17:1-22:12
@@ -78,6 +89,7 @@ MERGED from [androidx.arch.core:core-runtime:2.2.0] /Users/aban/.gradle/caches/8
 MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:17:1-55:12
 MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/aban/.gradle/caches/8.14.3/transforms/4767bb86a4ab78aa54b0dda74902e5d9/transformed/startup-runtime-1.1.1/AndroidManifest.xml:17:1-33:12
 MERGED from [androidx.tracing:tracing:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/debfc925174217f66ce796ca8244ce3c/transformed/tracing-1.0.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/627c6d892d82701662677507e71be91a/transformed/cursoradapter-1.0.0/AndroidManifest.xml:17:1-22:12
 	package
 		INJECTED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml
 	android:versionName
@@ -90,6 +102,8 @@ MERGED from [androidx.tracing:tracing:1.0.0] /Users/aban/.gradle/caches/8.14.3/t
 		ADDED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:2:11-69
 uses-permission#android.permission.INTERNET
 ADDED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:5:5-67
+MERGED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:22:5-67
+MERGED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:22:5-67
 	android:name
 		ADDED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:5:22-64
 uses-permission#android.permission.RECORD_AUDIO
@@ -109,6 +123,8 @@ ADDED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidMani
 application
 ADDED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:11:5-40:19
 INJECTED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:11:5-40:19
+MERGED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:34:5-53:19
+MERGED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:34:5-53:19
 MERGED from [androidx.compose.ui:ui-tooling-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/914fbc85acd012049982d1b3b3c2fe86/transformed/ui-tooling-release/AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.compose.ui:ui-tooling-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/914fbc85acd012049982d1b3b3c2fe86/transformed/ui-tooling-release/AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.emoji2:emoji2:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/fdb15e7cd6f4929690785027249b43ad/transformed/emoji2-1.3.0/AndroidManifest.xml:23:5-33:19
@@ -167,7 +183,7 @@ category#android.intent.category.LAUNCHER
 ADDED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:29:17-77
 	android:name
 		ADDED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:29:27-74
-intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:host:callback+data:scheme:echox
+intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:host:auth+data:scheme:echox
 ADDED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:33:13-38:29
 action#android.intent.action.VIEW
 ADDED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:34:17-69
@@ -182,9 +198,9 @@ ADDED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidMani
 	android:name
 		ADDED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:36:27-75
 data
-ADDED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:37:17-72
+ADDED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:37:17-68
 	android:host
-		ADDED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:37:46-69
+		ADDED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:37:46-65
 	android:scheme
 		ADDED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:37:23-45
 uses-sdk
@@ -213,6 +229,14 @@ MERGED from [androidx.navigation:navigation-runtime-ktx:2.7.6] /Users/aban/.grad
 MERGED from [androidx.navigation:navigation-runtime-ktx:2.7.6] /Users/aban/.gradle/caches/8.14.3/transforms/d030ae708084cc27f4b453cf9bd9ebb4/transformed/navigation-runtime-ktx-2.7.6/AndroidManifest.xml:5:5-44
 MERGED from [androidx.navigation:navigation-compose:2.7.6] /Users/aban/.gradle/caches/8.14.3/transforms/b1db1a9b6c81b00f77f5967341a8655a/transformed/navigation-compose-2.7.6/AndroidManifest.xml:5:5-44
 MERGED from [androidx.navigation:navigation-compose:2.7.6] /Users/aban/.gradle/caches/8.14.3/transforms/b1db1a9b6c81b00f77f5967341a8655a/transformed/navigation-compose-2.7.6/AndroidManifest.xml:5:5-44
+MERGED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:18:5-20:41
+MERGED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:18:5-20:41
+MERGED from [androidx.appcompat:appcompat-resources:1.6.1] /Users/aban/.gradle/caches/8.14.3/transforms/9ba7a3dc988fdd6117fb201c33b28960/transformed/appcompat-resources-1.6.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.appcompat:appcompat-resources:1.6.1] /Users/aban/.gradle/caches/8.14.3/transforms/9ba7a3dc988fdd6117fb201c33b28960/transformed/appcompat-resources-1.6.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.appcompat:appcompat:1.6.1] /Users/aban/.gradle/caches/8.14.3/transforms/4deeef5cee3eff43ef1d74d2711ebe2a/transformed/appcompat-1.6.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.appcompat:appcompat:1.6.1] /Users/aban/.gradle/caches/8.14.3/transforms/4deeef5cee3eff43ef1d74d2711ebe2a/transformed/appcompat-1.6.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.fragment:fragment:1.3.6] /Users/aban/.gradle/caches/8.14.3/transforms/6f1ff146ca85bd5678264dca16b5a8df/transformed/fragment-1.3.6/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.fragment:fragment:1.3.6] /Users/aban/.gradle/caches/8.14.3/transforms/6f1ff146ca85bd5678264dca16b5a8df/transformed/fragment-1.3.6/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.compose.foundation:foundation-layout-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/678e8661ab63f13c677be9d3691be38d/transformed/foundation-layout-release/AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.foundation:foundation-layout-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/678e8661ab63f13c677be9d3691be38d/transformed/foundation-layout-release/AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.animation:animation-core-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/6f0f5bb3a707d207ea03dc2dcb534a94/transformed/animation-core-release/AndroidManifest.xml:5:5-44
@@ -245,8 +269,16 @@ MERGED from [androidx.compose.material:material-ripple-android:1.6.0] /Users/aba
 MERGED from [androidx.compose.material:material-ripple-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/fbe2cc13e1b731e0571debc47079a4e9/transformed/material-ripple-release/AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.foundation:foundation-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/e55f49e33b4c11b3dc3f0b8c43c0b6f2/transformed/foundation-release/AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.foundation:foundation-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/e55f49e33b4c11b3dc3f0b8c43c0b6f2/transformed/foundation-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.emoji2:emoji2-views-helper:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/d8b7966d46234480603cc61d76339e11/transformed/emoji2-views-helper-1.3.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.emoji2:emoji2-views-helper:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/d8b7966d46234480603cc61d76339e11/transformed/emoji2-views-helper-1.3.0/AndroidManifest.xml:5:5-44
 MERGED from [androidx.emoji2:emoji2:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/fdb15e7cd6f4929690785027249b43ad/transformed/emoji2-1.3.0/AndroidManifest.xml:21:5-44
 MERGED from [androidx.emoji2:emoji2:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/fdb15e7cd6f4929690785027249b43ad/transformed/emoji2-1.3.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.loader:loader:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/731492041a31195307ec0638993128ab/transformed/loader-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.loader:loader:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/731492041a31195307ec0638993128ab/transformed/loader-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0] /Users/aban/.gradle/caches/8.14.3/transforms/1bf842a7140eace10f980f442864429c/transformed/lifecycle-livedata-core-ktx-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0] /Users/aban/.gradle/caches/8.14.3/transforms/1bf842a7140eace10f980f442864429c/transformed/lifecycle-livedata-core-ktx-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.7.0] /Users/aban/.gradle/caches/8.14.3/transforms/ab8b90439aa4fcfb00c063c0df19d41b/transformed/lifecycle-livedata-2.7.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.7.0] /Users/aban/.gradle/caches/8.14.3/transforms/ab8b90439aa4fcfb00c063c0df19d41b/transformed/lifecycle-livedata-2.7.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.lifecycle:lifecycle-process:2.7.0] /Users/aban/.gradle/caches/8.14.3/transforms/4e26bf80a1455da874b2c16b7dfafd83/transformed/lifecycle-process-2.7.0/AndroidManifest.xml:21:5-44
 MERGED from [androidx.lifecycle:lifecycle-process:2.7.0] /Users/aban/.gradle/caches/8.14.3/transforms/4e26bf80a1455da874b2c16b7dfafd83/transformed/lifecycle-process-2.7.0/AndroidManifest.xml:21:5-44
 MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.7.0] /Users/aban/.gradle/caches/8.14.3/transforms/826fea8ed2c7f2d3182ed8e86ea3eef7/transformed/lifecycle-livedata-core-2.7.0/AndroidManifest.xml:20:5-44
@@ -301,12 +333,16 @@ MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /Users/aban/
 MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/9a10625ccbcae89e80e52c80646d2c58/transformed/customview-poolingcontainer-1.0.0/AndroidManifest.xml:20:5-21:38
 MERGED from [androidx.core:core-ktx:1.12.0] /Users/aban/.gradle/caches/8.14.3/transforms/1ee256996b4bf81683d2b1d7a7bd13f6/transformed/core-ktx-1.12.0/AndroidManifest.xml:5:5-44
 MERGED from [androidx.core:core-ktx:1.12.0] /Users/aban/.gradle/caches/8.14.3/transforms/1ee256996b4bf81683d2b1d7a7bd13f6/transformed/core-ktx-1.12.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.browser:browser:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/1443e9c53388d98919b24538ec68567d/transformed/browser-1.3.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.browser:browser:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/1443e9c53388d98919b24538ec68567d/transformed/browser-1.3.0/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.media:media:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/caed703062fded3a927420bcb5e3f313/transformed/media-1.6.0/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.media:media:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/caed703062fded3a927420bcb5e3f313/transformed/media-1.6.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/c9f2897e3aeae3c5d7a2183530ac3c60/transformed/drawerlayout-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/c9f2897e3aeae3c5d7a2183530ac3c60/transformed/drawerlayout-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/9f265a84da43336aa738ea67935150b0/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/9f265a84da43336aa738ea67935150b0/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.customview:customview:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/5eb4a481250c83ab2183ecdce6f2375f/transformed/customview-1.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.customview:customview:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/5eb4a481250c83ab2183ecdce6f2375f/transformed/customview-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.appcompat:appcompat-resources:1.6.1] /Users/aban/.gradle/caches/8.14.3/transforms/9ba7a3dc988fdd6117fb201c33b28960/transformed/appcompat-resources-1.6.1/AndroidManifest.xml:20:5-44
-MERGED from [androidx.appcompat:appcompat-resources:1.6.1] /Users/aban/.gradle/caches/8.14.3/transforms/9ba7a3dc988fdd6117fb201c33b28960/transformed/appcompat-resources-1.6.1/AndroidManifest.xml:20:5-44
 MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /Users/aban/.gradle/caches/8.14.3/transforms/ba3279b6b8667f86f328392f6edc11c7/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /Users/aban/.gradle/caches/8.14.3/transforms/ba3279b6b8667f86f328392f6edc11c7/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /Users/aban/.gradle/caches/8.14.3/transforms/14a1d793f0907a04e2561a76867deeaa/transformed/vectordrawable-1.1.0/AndroidManifest.xml:20:5-22:41
@@ -323,6 +359,8 @@ MERGED from [androidx.compose.runtime:runtime-saveable-android:1.6.0] /Users/aba
 MERGED from [androidx.compose.runtime:runtime-saveable-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/39485250280919218a19cc8b280d690f/transformed/runtime-saveable-release/AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.runtime:runtime-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/63123a35d25e9efef08fccf6320aaba9/transformed/runtime-release/AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.runtime:runtime-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/63123a35d25e9efef08fccf6320aaba9/transformed/runtime-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] /Users/aban/.gradle/caches/8.14.3/transforms/7b748b618b1e20c9968b71caab78182e/transformed/security-crypto-1.1.0-alpha06/AndroidManifest.xml:20:5-44
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] /Users/aban/.gradle/caches/8.14.3/transforms/7b748b618b1e20c9968b71caab78182e/transformed/security-crypto-1.1.0-alpha06/AndroidManifest.xml:20:5-44
 MERGED from [androidx.annotation:annotation-experimental:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/29af70de20ccc1f755b9871edc30666a/transformed/annotation-experimental-1.3.1/AndroidManifest.xml:20:5-44
 MERGED from [androidx.annotation:annotation-experimental:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/29af70de20ccc1f755b9871edc30666a/transformed/annotation-experimental-1.3.1/AndroidManifest.xml:20:5-44
 MERGED from [androidx.exifinterface:exifinterface:1.3.6] /Users/aban/.gradle/caches/8.14.3/transforms/2eb324d555f20226da8fc0ff079ab201/transformed/exifinterface-1.3.6/AndroidManifest.xml:20:5-22:41
@@ -339,10 +377,38 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/aban/.gradle/caches/
 MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/aban/.gradle/caches/8.14.3/transforms/4767bb86a4ab78aa54b0dda74902e5d9/transformed/startup-runtime-1.1.1/AndroidManifest.xml:21:5-23:41
 MERGED from [androidx.tracing:tracing:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/debfc925174217f66ce796ca8244ce3c/transformed/tracing-1.0.0/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.tracing:tracing:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/debfc925174217f66ce796ca8244ce3c/transformed/tracing-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/627c6d892d82701662677507e71be91a/transformed/cursoradapter-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /Users/aban/.gradle/caches/8.14.3/transforms/627c6d892d82701662677507e71be91a/transformed/cursoradapter-1.0.0/AndroidManifest.xml:20:5-44
 	android:targetSdkVersion
 		INJECTED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml
 	android:minSdkVersion
 		INJECTED from /Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml
+queries
+ADDED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:24:5-32:15
+intent#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+data:scheme:https
+ADDED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:25:9-31:18
+activity#net.openid.appauth.AuthorizationManagementActivity
+ADDED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:35:9-40:77
+	android:launchMode
+		ADDED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:39:13-44
+	android:exported
+		ADDED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:38:13-37
+	android:configChanges
+		ADDED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:37:13-115
+	android:theme
+		ADDED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:40:13-74
+	android:name
+		ADDED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:36:13-78
+activity#net.openid.appauth.RedirectUriReceiverActivity
+ADDED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:41:9-52:20
+	android:exported
+		ADDED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:43:13-36
+	android:name
+		ADDED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:42:13-74
+intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:scheme:${appAuthRedirectScheme}
+ADDED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:44:13-51:29
+intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:scheme:echox
+ADDED from [net.openid:appauth:0.11.1] /Users/aban/.gradle/caches/8.14.3/transforms/51fb07a61c5511727fe0275a5f6b3ff0/transformed/appauth-0.11.1/AndroidManifest.xml:44:13-51:29
 activity#androidx.compose.ui.tooling.PreviewActivity
 ADDED from [androidx.compose.ui:ui-tooling-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/914fbc85acd012049982d1b3b3c2fe86/transformed/ui-tooling-release/AndroidManifest.xml:23:9-25:39
 	android:exported

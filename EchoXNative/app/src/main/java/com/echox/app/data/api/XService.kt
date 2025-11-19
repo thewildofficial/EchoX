@@ -45,6 +45,13 @@ interface XService {
         @Part("command") command: RequestBody,
         @Part("media_id") mediaId: RequestBody
     ): MediaFinalizeResponse
+
+    @Multipart
+    @POST("1.1/media/upload.json")
+    suspend fun checkUploadStatus(
+        @Part("command") command: RequestBody,
+        @Part("media_id") mediaId: RequestBody
+    ): MediaFinalizeResponse
 }
 
 data class UserProfileResponse(val data: UserData)
@@ -53,13 +60,16 @@ data class UserData(
     val name: String,
     val username: String,
     val profile_image_url: String,
-    val verified: Boolean
+    val verified: Boolean,
+    val verified_type: String? = null
 )
 
 data class TweetRequest(
     val text: String,
-    val media: MediaIds? = null
+    val media: MediaIds? = null,
+    val reply: ReplyData? = null
 )
+data class ReplyData(val in_reply_to_tweet_id: String)
 data class MediaIds(val media_ids: List<String>)
 data class TweetResponse(val data: TweetData)
 data class TweetData(val id: String, val text: String)

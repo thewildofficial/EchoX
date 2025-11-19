@@ -25,7 +25,7 @@ class AudioRecorderManager {
     private val _amplitude = MutableStateFlow(0f)
     val amplitude: StateFlow<Float> = _amplitude.asStateFlow()
 
-    private val sampleRate = 44100
+    private val sampleRate = SAMPLE_RATE
     private val channelConfig = AudioFormat.CHANNEL_IN_MONO
     private val audioFormat = AudioFormat.ENCODING_PCM_16BIT
     private val bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
@@ -84,5 +84,10 @@ class AudioRecorderManager {
             e.printStackTrace()
         }
         audioRecord = null
+    }
+    companion object {
+        const val SAMPLE_RATE = 44100
+        const val CHANNELS = 1
+        const val BITS_PER_SAMPLE = 16
     }
 }

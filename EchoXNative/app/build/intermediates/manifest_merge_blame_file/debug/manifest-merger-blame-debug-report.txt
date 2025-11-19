@@ -1,0 +1,187 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.echox.app"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="26"
+9        android:targetSdkVersion="34" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:5:5-67
+11-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:5:22-64
+12    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+12-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:6:5-71
+12-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:6:22-68
+13    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+13-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:7:5-80
+13-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:7:22-77
+14    <uses-permission
+14-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:8:5-9:38
+15        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+15-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:8:22-78
+16        android:maxSdkVersion="28" />
+16-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:9:9-35
+17    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+17-->[androidx.media3:media3-exoplayer:1.2.0] /Users/aban/.gradle/caches/8.14.3/transforms/369fa74eca4396c88cd4f627ed6d4e82/transformed/media3-exoplayer-1.2.0/AndroidManifest.xml:22:5-79
+17-->[androidx.media3:media3-exoplayer:1.2.0] /Users/aban/.gradle/caches/8.14.3/transforms/369fa74eca4396c88cd4f627ed6d4e82/transformed/media3-exoplayer-1.2.0/AndroidManifest.xml:22:22-76
+18
+19    <permission
+19-->[androidx.core:core:1.12.0] /Users/aban/.gradle/caches/8.14.3/transforms/2d1cc1a5265edfbfbc55c9cdcfc4b0b1/transformed/core-1.12.0/AndroidManifest.xml:22:5-24:47
+20        android:name="com.echox.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+20-->[androidx.core:core:1.12.0] /Users/aban/.gradle/caches/8.14.3/transforms/2d1cc1a5265edfbfbc55c9cdcfc4b0b1/transformed/core-1.12.0/AndroidManifest.xml:23:9-81
+21        android:protectionLevel="signature" />
+21-->[androidx.core:core:1.12.0] /Users/aban/.gradle/caches/8.14.3/transforms/2d1cc1a5265edfbfbc55c9cdcfc4b0b1/transformed/core-1.12.0/AndroidManifest.xml:24:9-44
+22
+23    <uses-permission android:name="com.echox.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+23-->[androidx.core:core:1.12.0] /Users/aban/.gradle/caches/8.14.3/transforms/2d1cc1a5265edfbfbc55c9cdcfc4b0b1/transformed/core-1.12.0/AndroidManifest.xml:26:5-97
+23-->[androidx.core:core:1.12.0] /Users/aban/.gradle/caches/8.14.3/transforms/2d1cc1a5265edfbfbc55c9cdcfc4b0b1/transformed/core-1.12.0/AndroidManifest.xml:26:22-94
+24
+25    <application
+25-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:11:5-40:19
+26        android:allowBackup="true"
+26-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:12:9-35
+27        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+27-->[androidx.core:core:1.12.0] /Users/aban/.gradle/caches/8.14.3/transforms/2d1cc1a5265edfbfbc55c9cdcfc4b0b1/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
+28        android:dataExtractionRules="@xml/data_extraction_rules"
+28-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:13:9-65
+29        android:debuggable="true"
+30        android:extractNativeLibs="false"
+31        android:fullBackupContent="@xml/backup_rules"
+31-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:14:9-54
+32        android:icon="@drawable/icon"
+32-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:15:9-38
+33        android:label="EchoX"
+33-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:16:9-30
+34        android:roundIcon="@drawable/icon"
+34-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:17:9-43
+35        android:supportsRtl="true"
+35-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:18:9-35
+36        android:theme="@style/Theme.EchoX" >
+36-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:19:9-43
+37        <activity
+37-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:21:9-39:20
+38            android:name="com.echox.app.MainActivity"
+38-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:22:13-41
+39            android:exported="true"
+39-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:23:13-36
+40            android:label="EchoX"
+40-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:24:13-34
+41            android:theme="@style/Theme.EchoX" >
+41-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:25:13-47
+42            <intent-filter>
+42-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:26:13-30:29
+43                <action android:name="android.intent.action.MAIN" />
+43-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:27:17-69
+43-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:27:25-66
+44
+45                <category android:name="android.intent.category.LAUNCHER" />
+45-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:29:17-77
+45-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:29:27-74
+46            </intent-filter>
+47
+48            <!-- Deep Link for X Auth -->
+49            <intent-filter>
+49-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:33:13-38:29
+50                <action android:name="android.intent.action.VIEW" />
+50-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:34:17-69
+50-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:34:25-66
+51
+52                <category android:name="android.intent.category.DEFAULT" />
+52-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:35:17-76
+52-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:35:27-73
+53                <category android:name="android.intent.category.BROWSABLE" />
+53-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:36:17-78
+53-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:36:27-75
+54
+55                <data
+55-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:37:17-72
+56                    android:host="callback"
+56-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:37:46-69
+57                    android:scheme="echox" />
+57-->/Users/aban/drive/Projects/EchoX/EchoXNative/app/src/main/AndroidManifest.xml:37:23-45
+58            </intent-filter>
+59        </activity>
+60        <activity
+60-->[androidx.compose.ui:ui-tooling-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/914fbc85acd012049982d1b3b3c2fe86/transformed/ui-tooling-release/AndroidManifest.xml:23:9-25:39
+61            android:name="androidx.compose.ui.tooling.PreviewActivity"
+61-->[androidx.compose.ui:ui-tooling-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/914fbc85acd012049982d1b3b3c2fe86/transformed/ui-tooling-release/AndroidManifest.xml:24:13-71
+62            android:exported="true" />
+62-->[androidx.compose.ui:ui-tooling-android:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/914fbc85acd012049982d1b3b3c2fe86/transformed/ui-tooling-release/AndroidManifest.xml:25:13-36
+63
+64        <provider
+64-->[androidx.emoji2:emoji2:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/fdb15e7cd6f4929690785027249b43ad/transformed/emoji2-1.3.0/AndroidManifest.xml:24:9-32:20
+65            android:name="androidx.startup.InitializationProvider"
+65-->[androidx.emoji2:emoji2:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/fdb15e7cd6f4929690785027249b43ad/transformed/emoji2-1.3.0/AndroidManifest.xml:25:13-67
+66            android:authorities="com.echox.app.androidx-startup"
+66-->[androidx.emoji2:emoji2:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/fdb15e7cd6f4929690785027249b43ad/transformed/emoji2-1.3.0/AndroidManifest.xml:26:13-68
+67            android:exported="false" >
+67-->[androidx.emoji2:emoji2:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/fdb15e7cd6f4929690785027249b43ad/transformed/emoji2-1.3.0/AndroidManifest.xml:27:13-37
+68            <meta-data
+68-->[androidx.emoji2:emoji2:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/fdb15e7cd6f4929690785027249b43ad/transformed/emoji2-1.3.0/AndroidManifest.xml:29:13-31:52
+69                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+69-->[androidx.emoji2:emoji2:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/fdb15e7cd6f4929690785027249b43ad/transformed/emoji2-1.3.0/AndroidManifest.xml:30:17-75
+70                android:value="androidx.startup" />
+70-->[androidx.emoji2:emoji2:1.3.0] /Users/aban/.gradle/caches/8.14.3/transforms/fdb15e7cd6f4929690785027249b43ad/transformed/emoji2-1.3.0/AndroidManifest.xml:31:17-49
+71            <meta-data
+71-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/aban/.gradle/caches/8.14.3/transforms/4e26bf80a1455da874b2c16b7dfafd83/transformed/lifecycle-process-2.7.0/AndroidManifest.xml:29:13-31:52
+72                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+72-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/aban/.gradle/caches/8.14.3/transforms/4e26bf80a1455da874b2c16b7dfafd83/transformed/lifecycle-process-2.7.0/AndroidManifest.xml:30:17-78
+73                android:value="androidx.startup" />
+73-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/aban/.gradle/caches/8.14.3/transforms/4e26bf80a1455da874b2c16b7dfafd83/transformed/lifecycle-process-2.7.0/AndroidManifest.xml:31:17-49
+74            <meta-data
+74-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:29:13-31:52
+75                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+75-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:30:17-85
+76                android:value="androidx.startup" />
+76-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:31:17-49
+77        </provider>
+78
+79        <activity
+79-->[androidx.compose.ui:ui-test-manifest:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/bb1f8d1ac612b117f546920e011e857b/transformed/ui-test-manifest-1.6.0/AndroidManifest.xml:23:9-25:39
+80            android:name="androidx.activity.ComponentActivity"
+80-->[androidx.compose.ui:ui-test-manifest:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/bb1f8d1ac612b117f546920e011e857b/transformed/ui-test-manifest-1.6.0/AndroidManifest.xml:24:13-63
+81            android:exported="true" />
+81-->[androidx.compose.ui:ui-test-manifest:1.6.0] /Users/aban/.gradle/caches/8.14.3/transforms/bb1f8d1ac612b117f546920e011e857b/transformed/ui-test-manifest-1.6.0/AndroidManifest.xml:25:13-36
+82
+83        <receiver
+83-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:34:9-52:20
+84            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+84-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:35:13-76
+85            android:directBootAware="false"
+85-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:36:13-44
+86            android:enabled="true"
+86-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:37:13-35
+87            android:exported="true"
+87-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:38:13-36
+88            android:permission="android.permission.DUMP" >
+88-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:39:13-57
+89            <intent-filter>
+89-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:40:13-42:29
+90                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+90-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:41:17-91
+90-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:41:25-88
+91            </intent-filter>
+92            <intent-filter>
+92-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:43:13-45:29
+93                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+93-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:44:17-85
+93-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:44:25-82
+94            </intent-filter>
+95            <intent-filter>
+95-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:46:13-48:29
+96                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+96-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:47:17-88
+96-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:47:25-85
+97            </intent-filter>
+98            <intent-filter>
+98-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:49:13-51:29
+99                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+99-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:50:17-95
+99-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/aban/.gradle/caches/8.14.3/transforms/d7c24078016b75f2a8114b7778a5daef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:50:25-92
+100            </intent-filter>
+101        </receiver>
+102    </application>
+103
+104</manifest>

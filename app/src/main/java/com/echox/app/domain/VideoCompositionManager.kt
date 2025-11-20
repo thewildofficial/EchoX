@@ -215,49 +215,29 @@ class VideoCompositionManager(private val context: Context) {
                     // 1. Sample Foreground
                     vec4 foreground = texture2D(uTexSampler, vTexCoords);
                     
-                    // 2. Dynamic Background: "Deep Ocean Flow"
-                    // Instead of sharp lines, we use soft, moving radial gradients.
+                    // 2. Simple Black Background
+                    vec3 background = vec3(0.0, 0.0, 0.0); // Pure black
                     
-                    // Base Color: Deep XDark
-                    vec3 baseColor = vec3(0.05, 0.08, 0.12);
-                    
-                    // Blob 1: Cyan/Blue Glow moving in a figure-8
-                    vec2 pos1 = vec2(0.5, 0.5);
-                    pos1.x += 0.3 * sin(uTime * 0.4);
-                    pos1.y += 0.2 * cos(uTime * 0.5);
-                    float dist1 = distance(vTexCoords, pos1);
-                    float glow1 = 1.0 - smoothstep(0.0, 0.8, dist1); // Soft edge
-                    vec3 color1 = vec3(0.11, 0.61, 0.94); // XBlue
-                    
-                    // Blob 2: Darker/Purple hint moving opposite
-                    vec2 pos2 = vec2(0.5, 0.5);
-                    pos2.x -= 0.3 * cos(uTime * 0.3);
-                    pos2.y -= 0.2 * sin(uTime * 0.4);
-                    float dist2 = distance(vTexCoords, pos2);
-                    float glow2 = 1.0 - smoothstep(0.0, 0.9, dist2);
-                    vec3 color2 = vec3(0.0, 0.3, 0.6); // Deep Blue
-                    
-                    // Combine Background
-                    vec3 background = baseColor;
-                    background += color1 * glow1 * 0.4; // 40% intensity
-                    background += color2 * glow2 * 0.3; // 30% intensity
-                    
-                    // 3. Waveform Shimmer Effect
-                    // Detect if pixel is part of the waveform (blue-ish and opaque)
-                    // Simple check: Blue channel dominant and high alpha
+                    // 3. Waveform Pulsing Effect
+                    // Detect waveform (blue-ish and opaque)
                     bool isWaveform = foreground.a > 0.8 && foreground.b > foreground.r + 0.1;
-                    
                     vec3 finalForeground = foreground.rgb;
                     
                     if (isWaveform) {
-                        // Create a "shine" bar that moves across the screen
-                        float shinePos = fract(uTime * 0.5) * 2.0 - 0.5; // Moves from -0.5 to 1.5
-                        float shineWidth = 0.2;
+                        // Pulsing brightness based on time
+                        float pulse = 0.7 + 0.3 * sin(uTime * 2.5);
+                        
+                        // Apply pulse to waveform
+                        finalForeground *= pulse;
+                        
+                        // Horizontal sweep shine
+                        float shinePos = fract(uTime * 0.4) * 1.5 - 0.25;
+                        float shineWidth = 0.25;
                         float distToShine = abs(vTexCoords.x - shinePos);
                         float shineIntensity = 1.0 - smoothstep(0.0, shineWidth, distToShine);
                         
-                        // Add white shine to the waveform color
-                        finalForeground += vec3(0.4) * shineIntensity;
+                        // Add bright highlight
+                        finalForeground += vec3(0.5) * shineIntensity;
                     }
                     
                     // 4. Composite

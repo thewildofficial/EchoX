@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -101,11 +102,7 @@ fun PreviewScreen(
                                         .clip(RoundedCornerShape(16.dp))
                 ) {
                     AndroidView(
-                            modifier =
-                                    Modifier.fillMaxWidth()
-                                            .height(
-                                                    220.dp
-                                            ), // Approx 16:9 for typical phone width, or use aspect
+                            modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
                             // ratio modifier
                             factory = {
                                 PlayerView(it).apply {

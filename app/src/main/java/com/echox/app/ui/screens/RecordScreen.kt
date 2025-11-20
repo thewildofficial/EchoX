@@ -236,9 +236,16 @@ fun RecordScreen(navController: NavController, repository: XRepository) {
                                                                                 }
                                                                                 .onFailure { error
                                                                                         ->
+                                                                                        android.util
+                                                                                                .Log
+                                                                                                .e(
+                                                                                                        "EchoX_Error",
+                                                                                                        "Video generation failed",
+                                                                                                        error
+                                                                                                )
                                                                                         error.printStackTrace()
                                                                                         statusMessage =
-                                                                                                "Unable to process recording"
+                                                                                                "Unable to process recording: ${error.message}"
                                                                                         isGenerating =
                                                                                                 false
                                                                                 }

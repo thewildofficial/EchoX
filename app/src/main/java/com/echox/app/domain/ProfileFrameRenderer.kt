@@ -186,6 +186,6 @@ class ProfileFrameRenderer(private val context: Context) {
     }
 
     companion object {
-        private const val BACKGROUND_COLOR = 0xFF15202b.toInt() // XDark
+        private const val BACKGROUND_COLOR = android.graphics.Color.TRANSPARENT
     }
 }

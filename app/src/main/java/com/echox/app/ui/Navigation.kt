@@ -1,9 +1,9 @@
 package com.echox.app.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
@@ -28,9 +28,7 @@ fun Navigation() {
         val current = navController.currentDestination?.route
         if (current != target) {
             navController.navigate(target) {
-                popUpTo(navController.graph.startDestinationId) {
-                    inclusive = true
-                }
+                popUpTo(navController.graph.startDestinationId) { inclusive = true }
                 launchSingleTop = true
             }
         }
@@ -43,18 +41,33 @@ fun Navigation() {
         composable("login") { LoginScreen(navController, repository) }
         composable("record") { RecordScreen(navController, repository) }
         composable(
-            route = "preview?audio={audio}&video={video}&duration={duration}",
-            arguments =
-                listOf(
-                    navArgument("audio") { type = NavType.StringType; defaultValue = "" },
-                    navArgument("video") { type = NavType.StringType; defaultValue = "" },
-                    navArgument("duration") { type = NavType.LongType; defaultValue = 0L }
-                )
+                route =
+                        "preview?audio={audio}&video={video}&duration={duration}&amplitudes={amplitudes}",
+                arguments =
+                        listOf(
+                                navArgument("audio") {
+                                    type = NavType.StringType
+                                    defaultValue = ""
+                                },
+                                navArgument("video") {
+                                    type = NavType.StringType
+                                    defaultValue = ""
+                                },
+                                navArgument("duration") {
+                                    type = NavType.LongType
+                                    defaultValue = 0L
+                                },
+                                navArgument("amplitudes") {
+                                    type = NavType.StringType
+                                    defaultValue = ""
+                                }
+                        )
         ) { entry ->
             val audio = entry.arguments?.getString("audio")
             val video = entry.arguments?.getString("video")
             val duration = entry.arguments?.getLong("duration") ?: 0L
-            PreviewScreen(navController, repository, audio, video, duration)
+            val amplitudesPath = entry.arguments?.getString("amplitudes")
+            PreviewScreen(navController, repository, audio, video, duration, amplitudesPath)
         }
     }
 }

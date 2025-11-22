@@ -46,7 +46,8 @@ fun PreviewScreen(
         repository: XRepository,
         audioUri: String?,
         videoUri: String?,
-        durationMs: Long
+        durationMs: Long,
+        amplitudesPath: String?
 ) {
     val context = LocalContext.current
     val user by repository.userProfile.collectAsState()
@@ -55,6 +56,16 @@ fun PreviewScreen(
     val parsedAudioUri = remember(audioUri) { audioUri?.let { Uri.parse(it) } }
     val audioFile = remember(parsedAudioUri) { parsedAudioUri?.path?.let { File(it) } }
     val videoFile = remember(parsedVideoUri) { parsedVideoUri?.path?.let { File(it) } }
+    val amplitudes =
+            remember(amplitudesPath) {
+                amplitudesPath?.let { path ->
+                    runCatching {
+                                File(path).readText().split(",").mapNotNull { it.toFloatOrNull() }
+                            }
+                            .getOrNull()
+                }
+                        ?: emptyList()
+            }
     val sharePipeline = remember { SharePipeline(context, repository) }
     val scope = rememberCoroutineScope()
 
@@ -146,6 +157,7 @@ fun PreviewScreen(
                                         previewVideoFile = videoFile,
                                         durationMs = durationMs,
                                         avatarUrl = avatarUrl,
+                                        amplitudes = amplitudes,
                                         onStatus = { status -> statusMessage = status }
                                 )
                             }

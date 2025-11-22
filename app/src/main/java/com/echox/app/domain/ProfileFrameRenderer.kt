@@ -42,6 +42,9 @@ class ProfileFrameRenderer(private val context: Context) {
                 // Draw Watermark
                 drawWatermark(canvas)
 
+                // Draw Chunk Indicator (Top Right)
+                drawChunkIndicator(canvas, chunkLabel)
+
                 // Draw Avatar
                 val avatarBitmap = loadAvatarBitmap(avatarUrl)
                 drawAvatar(canvas, avatarBitmap)
@@ -77,6 +80,18 @@ class ProfileFrameRenderer(private val context: Context) {
                 }
         // Top right corner
         canvas.drawText("EchoX", canvas.width - 64f, 96f, paint)
+    }
+
+    private fun drawChunkIndicator(canvas: Canvas, chunkLabel: String) {
+        val paint =
+                Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    color = 0xFFFFFFFF.toInt() // White
+                    textSize = 56f
+                    typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                    textAlign = Paint.Align.RIGHT
+                }
+        // Top right corner, below watermark
+        canvas.drawText(chunkLabel, canvas.width - 64f, 180f, paint)
     }
 
     private fun drawFooter(canvas: Canvas, durationLabel: String) {

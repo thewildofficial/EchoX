@@ -5,30 +5,28 @@ import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
 import com.echox.app.data.api.UserData
+import com.echox.app.data.api.XApiService
 import com.echox.app.data.repository.XRepository
 import java.io.File
 import kotlin.math.ceil
 import kotlin.math.min
 
-class SharePipeline(
-        private val context: Context,
-        private val repository: XRepository // Kept for compatibility but unused for sharing now
-) {
+class SharePipeline(private val context: Context, private val repository: XRepository) {
 
     private val recordingPipeline = RecordingPipeline(context)
+    private val xApiService = XApiService()
 
+    /** Share recording as X thread (default) or via native share sheet (fallback) */
     suspend fun shareRecording(
             user: UserData?,
             audioFile: File,
             previewVideoFile: File,
             durationMs: Long,
             avatarUrl: String?,
-            onStatus: (String) -> Unit
+            amplitudes: List<Float>,
+            onStatus: (String) -> Unit,
+            preferXThread: Boolean = true
     ) {
-        // For simple sharing, we might just share the preview video if it's short enough.
-        // But if it's long, we should split it.
-        // However, standard intents handle multiple files well.
-
         val maxDurationMs = STANDARD_DURATION_LIMIT_SEC * 1000L
 
         val videos =
@@ -39,10 +37,37 @@ class SharePipeline(
                             audioFile = audioFile,
                             durationMs = durationMs,
                             avatarUrl = avatarUrl,
+                            amplitudes = amplitudes,
                             onStatus = onStatus
                     )
                 }
 
+        // Try X API thread posting first if preferred and user is logged in
+        if (preferXThread && user != null && videos.size > 1) {
+            // Get user's OAuth access token
+            val accessToken = repository.getAccessToken()
+            if (accessToken.isNullOrBlank()) {
+                onStatus("Not logged in to X, using share sheet...")
+            } else {
+                onStatus("Posting thread to X...")
+                val success =
+                        xApiService.postThread(
+                                videos = videos,
+                                baseText = "Check out my audio recording!",
+                                accessToken = accessToken,
+                                onProgress = onStatus
+                        )
+
+                if (success) {
+                    onStatus("Thread posted successfully!")
+                    return
+                } else {
+                    onStatus("X thread failed, falling back to share sheet...")
+                }
+            }
+        }
+
+        // Fallback to native share sheet
         onStatus("Opening share sheet...")
         shareFiles(videos)
         onStatus("Shared!")
@@ -52,6 +77,7 @@ class SharePipeline(
             audioFile: File,
             durationMs: Long,
             avatarUrl: String?,
+            amplitudes: List<Float>,
             onStatus: (String) -> Unit
     ): List<File> {
         val totalParts = ceil(durationMs / STANDARD_SEGMENT_MS.toDouble()).toInt().coerceAtLeast(1)
@@ -68,7 +94,9 @@ class SharePipeline(
                             avatarUrl = avatarUrl,
                             startMs = start,
                             segmentDurationMs = clipDuration,
-                            chunkLabel = "${index + 1}/$totalParts"
+                            chunkLabel = "${index + 1}/$totalParts",
+                            amplitudes = amplitudes,
+                            totalDurationMs = durationMs
                     )
             segments.add(file)
         }
@@ -95,11 +123,19 @@ class SharePipeline(
                     }
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    // Try to target X app directly for better UX
+                    setPackage("com.twitter.android")
                 }
 
-        val chooser = Intent.createChooser(intent, "Share Video")
-        chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(chooser)
+        try {
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            // Fallback to chooser if X app is not installed
+            intent.setPackage(null)
+            val chooser = Intent.createChooser(intent, "Share Video")
+            chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(chooser)
+        }
     }
 
     companion object {

@@ -10,9 +10,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
@@ -64,6 +68,7 @@ fun RecordScreen(navController: NavController, repository: XRepository) {
         val amplitudes = remember { mutableStateListOf<Float>() }
         var currentRecordingFile by remember { mutableStateOf<File?>(null) }
         var recordingStartTime by remember { mutableStateOf<Long?>(null) }
+        var elapsedTime by remember { mutableStateOf(0L) }
 
         // Permission Launcher
         val permissionLauncher =
@@ -95,6 +100,20 @@ fun RecordScreen(navController: NavController, repository: XRepository) {
                 }
         }
 
+        // Update elapsed time every second while recording
+        LaunchedEffect(isRecording, recordingStartTime) {
+                if (isRecording && recordingStartTime != null) {
+                        while (isRecording) {
+                                elapsedTime = System.currentTimeMillis() - recordingStartTime!!
+                                kotlinx.coroutines.delay(
+                                        100
+                                ) // Update 10x per second for smooth display
+                        }
+                } else {
+                        elapsedTime = 0L
+                }
+        }
+
         Box(
                 modifier = Modifier.fillMaxSize().background(Color(0xFF15202b)), // XDark
                 contentAlignment = Alignment.Center
@@ -105,14 +124,41 @@ fun RecordScreen(navController: NavController, repository: XRepository) {
                         modifier = Modifier.fillMaxSize().padding(vertical = 48.dp)
                 ) {
                         // Top Bar / Header
-                        Text(
-                                text = user?.name ?: "EchoX",
-                                style =
-                                        androidx.compose.material3.MaterialTheme.typography
-                                                .headlineMedium,
-                                color = Color.White.copy(alpha = 0.9f),
-                                modifier = Modifier.padding(top = 16.dp)
-                        )
+                        Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                        ) {
+                                Text(
+                                        text = user?.name ?: "EchoX",
+                                        style =
+                                                androidx.compose.material3.MaterialTheme.typography
+                                                        .headlineMedium,
+                                        color = Color.White.copy(alpha = 0.9f)
+                                )
+                                if (user != null) {
+                                        Spacer(modifier = Modifier.width(16.dp))
+                                        androidx.compose.material3.TextButton(
+                                                onClick = {
+                                                        scope.launch {
+                                                                repository.logout()
+                                                                // Navigation will auto-redirect to
+                                                                // Login due to LaunchedEffect in
+                                                                // Navigation.kt
+                                                        }
+                                                }
+                                        ) {
+                                                Text(
+                                                        text = "Logout",
+                                                        color = Color(0xFF1d9bf0),
+                                                        style =
+                                                                androidx.compose.material3
+                                                                        .MaterialTheme.typography
+                                                                        .labelLarge
+                                                )
+                                        }
+                                }
+                        }
 
                         // Central Visuals (Avatar + Waveform)
                         Box(contentAlignment = Alignment.Center) {
@@ -160,6 +206,24 @@ fun RecordScreen(navController: NavController, repository: XRepository) {
 
                         // Bottom Controls
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                // Recording Timer
+                                if (isRecording) {
+                                        val minutes = (elapsedTime / 1000) / 60
+                                        val seconds = (elapsedTime / 1000) % 60
+                                        Text(
+                                                text = String.format("%d:%02d", minutes, seconds),
+                                                color = Color(0xFF1DA1F2), // XBlue
+                                                style =
+                                                        androidx.compose.material3.MaterialTheme
+                                                                .typography
+                                                                .displaySmall,
+                                                fontWeight =
+                                                        androidx.compose.ui.text.font.FontWeight
+                                                                .Bold,
+                                                modifier = Modifier.padding(bottom = 8.dp)
+                                        )
+                                }
+
                                 Text(
                                         text =
                                                 when {
@@ -229,9 +293,14 @@ fun RecordScreen(navController: NavController, repository: XRepository) {
                                                                                                 )
                                                                                         isGenerating =
                                                                                                 false
+                                                                                        val amplitudesParam =
+                                                                                                Uri.encode(
+                                                                                                        assets.amplitudesFile
+                                                                                                                .absolutePath
+                                                                                                )
                                                                                         navController
                                                                                                 .navigate(
-                                                                                                        "preview?audio=$audioParam&video=$videoParam&duration=${assets.durationMs}"
+                                                                                                        "preview?audio=$audioParam&video=$videoParam&duration=${assets.durationMs}&amplitudes=$amplitudesParam"
                                                                                                 )
                                                                                 }
                                                                                 .onFailure { error

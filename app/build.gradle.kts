@@ -28,7 +28,16 @@ android {
             localProperties.load(FileInputStream(localPropertiesFile))
         }
         val xClientId = localProperties.getProperty("X_CLIENT_ID") ?: ""
+        val xClientSecret = localProperties.getProperty("X_CLIENT_SECRET") ?: ""
+        val xApiKey = localProperties.getProperty("X_API_KEY") ?: ""
+        val xApiSecret = localProperties.getProperty("X_API_SECRET") ?: ""
+        val xBearerToken = localProperties.getProperty("X_BEARER_TOKEN") ?: ""
+        
         buildConfigField("String", "X_CLIENT_ID", "\"$xClientId\"")
+        buildConfigField("String", "X_CLIENT_SECRET", "\"$xClientSecret\"")
+        buildConfigField("String", "X_API_KEY", "\"$xApiKey\"")
+        buildConfigField("String", "X_API_SECRET", "\"$xApiSecret\"")
+        buildConfigField("String", "X_BEARER_TOKEN", "\"$xBearerToken\"")
         manifestPlaceholders["appAuthRedirectScheme"] = "echox"
     }
 
@@ -92,6 +101,12 @@ dependencies {
 
     // Image Loading
     implementation("io.coil-kt:coil-compose:2.5.0")
+
+    // Ktor for X API
+    implementation("io.ktor:ktor-client-cio:2.3.7")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
+    implementation("io.ktor:ktor-serialization-gson:2.3.7")
+    implementation("io.ktor:ktor-client-logging:2.3.7")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

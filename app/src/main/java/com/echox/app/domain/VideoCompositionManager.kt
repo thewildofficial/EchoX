@@ -32,14 +32,15 @@ class VideoCompositionManager(private val context: Context) {
             imageUri: Uri,
             audioUri: Uri,
             outputFile: File,
-            durationMs: Long
+            durationMs: Long,
+            chunkLabel: String = "1/1"
     ): Uri = suspendCancellableCoroutine { continuation ->
         try {
             // 1. Prepare Image MediaItem (Video Track)
             val imageItem =
                     MediaItem.Builder().setUri(imageUri).setMimeType(MimeTypes.IMAGE_PNG).build()
 
-            // Dynamic Pulsing Glow Effect
+            // Dynamic Pulsing Waveform Effect
             val glowEffect = PulsingGlowEffect()
 
             val imageEditedMediaItem =

@@ -4,14 +4,13 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -26,28 +25,26 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
 import com.echox.app.data.repository.XRepository
+import androidx.compose.ui.viewinterop.AndroidView
 import com.echox.app.domain.SharePipeline
 import java.io.File
 import kotlinx.coroutines.launch
 
 @Composable
 fun PreviewScreen(
-        navController: NavController,
-        repository: XRepository,
-        audioUri: String?,
-        videoUri: String?,
-        durationMs: Long,
-        amplitudesPath: String?
+    navController: NavController,
+    repository: XRepository,
+    audioUri: String?,
+    videoUri: String?,
+    durationMs: Long
 ) {
     val context = LocalContext.current
     val user by repository.userProfile.collectAsState()
@@ -56,153 +53,134 @@ fun PreviewScreen(
     val parsedAudioUri = remember(audioUri) { audioUri?.let { Uri.parse(it) } }
     val audioFile = remember(parsedAudioUri) { parsedAudioUri?.path?.let { File(it) } }
     val videoFile = remember(parsedVideoUri) { parsedVideoUri?.path?.let { File(it) } }
-    val amplitudes =
-            remember(amplitudesPath) {
-                amplitudesPath?.let { path ->
-                    runCatching {
-                                File(path).readText().split(",").mapNotNull { it.toFloatOrNull() }
-                            }
-                            .getOrNull()
-                }
-                        ?: emptyList()
-            }
     val sharePipeline = remember { SharePipeline(context, repository) }
     val scope = rememberCoroutineScope()
 
     val exoPlayer =
-            remember(parsedVideoUri) {
-                parsedVideoUri?.let {
-                    ExoPlayer.Builder(context).build().apply {
-                        setMediaItem(MediaItem.fromUri(it))
-                        prepare()
-                        playWhenReady = true
-                    }
+        remember(parsedVideoUri) {
+            parsedVideoUri?.let {
+                ExoPlayer.Builder(context).build().apply {
+                    setMediaItem(MediaItem.fromUri(it))
+                    prepare()
+                    playWhenReady = true
                 }
             }
+        }
 
-    DisposableEffect(exoPlayer) { onDispose { exoPlayer?.release() } }
+    DisposableEffect(exoPlayer) {
+        onDispose { exoPlayer?.release() }
+    }
 
     var statusMessage by remember { mutableStateOf("") }
     var isSharing by remember { mutableStateOf(false) }
 
     Column(
-            modifier =
-                    Modifier.fillMaxSize()
-                            .background(Color(0xFF15202b)) // XDark
-                            .padding(horizontal = 24.dp, vertical = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+            .padding(horizontal = 24.dp, vertical = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                    text = "Preview",
-                    style = androidx.compose.material3.MaterialTheme.typography.headlineSmall,
-                    color = Color.White,
-                    modifier = Modifier.align(Alignment.Start)
+                text = "Preview",
+                color = Color.White,
+                modifier = Modifier.align(Alignment.Start)
             )
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             if (exoPlayer != null) {
-                // 16:9 Aspect Ratio Container
-                Box(
-                        modifier =
-                                Modifier.fillMaxWidth()
-                                        .background(Color.Black, RoundedCornerShape(16.dp))
-                                        .clip(RoundedCornerShape(16.dp))
-                ) {
-                    AndroidView(
-                            modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
-                            // ratio modifier
-                            factory = {
-                                PlayerView(it).apply {
-                                    useController = true
-                                    player = exoPlayer
-                                }
-                            }
-                    )
-                }
+                AndroidView(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(320.dp)
+                        .background(Color.DarkGray, RoundedCornerShape(24.dp)),
+                    factory = {
+                        PlayerView(it).apply {
+                            useController = true
+                            player = exoPlayer
+                        }
+                    }
+                )
             } else {
                 Text(text = "Preview unavailable", color = Color.Gray)
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
-                    text = formatDuration(durationMs),
-                    color = Color.White.copy(alpha = 0.6f),
-                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium
+                text = formatDuration(durationMs),
+                color = Color.White.copy(alpha = 0.7f)
             )
         }
 
         if (statusMessage.isNotBlank()) {
-            Text(text = statusMessage, color = Color.White.copy(alpha = 0.9f))
+            Text(text = statusMessage, color = Color.White.copy(alpha = 0.8f))
         }
 
         Column(modifier = Modifier.fillMaxWidth()) {
             Button(
-                    onClick = {
-                        if (audioFile == null || videoFile == null) {
-                            Toast.makeText(context, "Missing recording", Toast.LENGTH_SHORT).show()
-                            return@Button
-                        }
-                        if (isSharing) return@Button
-                        isSharing = true
-                        statusMessage = "Preparing upload…"
-                        val avatarUrl = user?.profile_image_url?.replace("_normal", "")
-                        scope.launch {
-                            runCatching {
+                onClick = {
+                    if (audioFile == null || videoFile == null) {
+                        Toast.makeText(context, "Missing recording", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    if (isSharing) return@Button
+                    isSharing = true
+                    statusMessage = "Preparing upload…"
+                    val avatarUrl = user?.profile_image_url?.replace("_normal", "")
+                    scope.launch {
+                        runCatching {
                                 sharePipeline.shareRecording(
-                                        user = user,
-                                        audioFile = audioFile,
-                                        previewVideoFile = videoFile,
-                                        durationMs = durationMs,
-                                        avatarUrl = avatarUrl,
-                                        amplitudes = amplitudes,
-                                        onStatus = { status -> statusMessage = status }
+                                    user = user,
+                                    audioFile = audioFile,
+                                    previewVideoFile = videoFile,
+                                    durationMs = durationMs,
+                                    avatarUrl = avatarUrl,
+                                    onStatus = { status -> statusMessage = status }
                                 )
                             }
-                                    .onSuccess {
-                                        isSharing = false
-                                        Toast.makeText(context, "Shared on X!", Toast.LENGTH_SHORT)
-                                                .show()
-                                        navController.navigate("record") {
-                                            popUpTo("record") { inclusive = true }
-                                        }
-                                    }
-                                    .onFailure { error ->
-                                        isSharing = false
-                                        statusMessage =
-                                                "Failed: ${error.message ?: "Unknown error"}"
-                                    }
-                        }
-                    },
-                    enabled = !isSharing && parsedAudioUri != null && parsedVideoUri != null,
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    colors =
-                            ButtonDefaults.buttonColors(containerColor = Color(0xFF1d9bf0)) // XBlue
+                            .onSuccess {
+                                isSharing = false
+                                Toast.makeText(context, "Shared on X!", Toast.LENGTH_SHORT).show()
+                                navController.navigate("record") {
+                                    popUpTo("record") { inclusive = true }
+                                }
+                            }
+                            .onFailure { error ->
+                                isSharing = false
+                                statusMessage = "Failed: ${error.message ?: "Unknown error"}"
+                            }
+                    }
+                },
+                enabled = !isSharing && parsedAudioUri != null && parsedVideoUri != null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
             ) {
                 Text(
-                        text = if (isSharing) "Sharing..." else "Share to X",
-                        color = Color.White,
-                        style = androidx.compose.material3.MaterialTheme.typography.titleMedium
+                    text = if (isSharing) "Sharing..." else "Share to X",
+                    color = Color.Black
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Button(
-                    onClick = { navController.popBackStack("record", inclusive = false) },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    colors =
-                            ButtonDefaults.buttonColors(
-                                    containerColor = Color.Transparent,
-                                    contentColor = Color.White.copy(alpha = 0.7f)
-                            )
-            ) {
-                Text(
-                        text = "Discard",
-                        style = androidx.compose.material3.MaterialTheme.typography.bodyLarge
+                onClick = {
+                    navController.popBackStack("record", inclusive = false)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = Color.White
                 )
+            ) {
+                Text(text = "Record Again")
             }
         }
     }
@@ -214,3 +192,4 @@ private fun formatDuration(durationMs: Long): String {
     val seconds = totalSeconds % 60
     return "%d:%02d".format(minutes, seconds)
 }
+

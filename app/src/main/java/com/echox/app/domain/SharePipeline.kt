@@ -1,84 +1,72 @@
 package com.echox.app.domain
 
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import androidx.core.content.FileProvider
+import com.echox.app.data.api.MediaIds
+import com.echox.app.data.api.ReplyData
+import com.echox.app.data.api.TweetRequest
 import com.echox.app.data.api.UserData
-import com.echox.app.data.api.XApiService
 import com.echox.app.data.repository.XRepository
 import java.io.File
+import java.io.FileInputStream
 import kotlin.math.ceil
 import kotlin.math.min
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
-class SharePipeline(private val context: Context, private val repository: XRepository) {
+class SharePipeline(
+    private val context: Context,
+    private val repository: XRepository
+) {
 
     private val recordingPipeline = RecordingPipeline(context)
-    private val xApiService = XApiService()
 
-    /** Share recording as X thread (default) or via native share sheet (fallback) */
     suspend fun shareRecording(
-            user: UserData?,
-            audioFile: File,
-            previewVideoFile: File,
-            durationMs: Long,
-            avatarUrl: String?,
-            amplitudes: List<Float>,
-            onStatus: (String) -> Unit,
-            preferXThread: Boolean = true
+        user: UserData?,
+        audioFile: File,
+        previewVideoFile: File,
+        durationMs: Long,
+        avatarUrl: String?,
+        onStatus: (String) -> Unit
     ) {
-        val maxDurationMs = STANDARD_DURATION_LIMIT_SEC * 1000L
+        val isPremiumUser = user?.verified_type in setOf("blue", "business")
+        val maxDurationMs =
+            if (isPremiumUser) PREMIUM_DURATION_LIMIT_SEC * 1000L
+            else STANDARD_DURATION_LIMIT_SEC * 1000L
 
         val videos =
-                if (durationMs <= maxDurationMs) {
-                    listOf(previewVideoFile)
-                } else {
-                    buildSegments(
-                            audioFile = audioFile,
-                            durationMs = durationMs,
-                            avatarUrl = avatarUrl,
-                            amplitudes = amplitudes,
-                            onStatus = onStatus
-                    )
-                }
-
-        // Try X API thread posting first if preferred and user is logged in
-        if (preferXThread && user != null && videos.size > 1) {
-            // Get user's OAuth access token
-            val accessToken = repository.getAccessToken()
-            if (accessToken.isNullOrBlank()) {
-                onStatus("Not logged in to X, using share sheet...")
+            if (durationMs <= maxDurationMs) {
+                listOf(previewVideoFile)
             } else {
-                onStatus("Posting thread to X...")
-                val success =
-                        xApiService.postThread(
-                                videos = videos,
-                                baseText = "Check out my audio recording!",
-                                accessToken = accessToken,
-                                onProgress = onStatus
-                        )
-
-                if (success) {
-                    onStatus("Thread posted successfully!")
-                    return
-                } else {
-                    onStatus("X thread failed, falling back to share sheet...")
-                }
+                buildSegments(
+                    audioFile = audioFile,
+                    durationMs = durationMs,
+                    avatarUrl = avatarUrl,
+                    onStatus = onStatus
+                )
             }
-        }
 
-        // Fallback to native share sheet
-        onStatus("Opening share sheet...")
-        shareFiles(videos)
-        onStatus("Shared!")
+        val mediaIds = mutableListOf<String>()
+        videos.forEachIndexed { index, videoFile ->
+            onStatus("Uploading part ${index + 1}/${videos.size}…")
+            val mediaId = uploadVideo(videoFile)
+            mediaIds.add(mediaId)
+        }
+        videos.filter { it != previewVideoFile }.forEach { it.delete() }
+
+        postThread(mediaIds, onStatus)
     }
 
     private suspend fun buildSegments(
-            audioFile: File,
-            durationMs: Long,
-            avatarUrl: String?,
-            amplitudes: List<Float>,
-            onStatus: (String) -> Unit
+        audioFile: File,
+        durationMs: Long,
+        avatarUrl: String?,
+        onStatus: (String) -> Unit
     ): List<File> {
         val totalParts = ceil(durationMs / STANDARD_SEGMENT_MS.toDouble()).toInt().coerceAtLeast(1)
         val segments = mutableListOf<File>()
@@ -89,57 +77,109 @@ class SharePipeline(private val context: Context, private val repository: XRepos
             val clipDuration = min(STANDARD_SEGMENT_MS, remaining)
             onStatus("Rendering part ${index + 1}/$totalParts…")
             val file =
-                    recordingPipeline.renderSegment(
-                            wavFile = audioFile,
-                            avatarUrl = avatarUrl,
-                            startMs = start,
-                            segmentDurationMs = clipDuration,
-                            chunkLabel = "${index + 1}/$totalParts",
-                            amplitudes = amplitudes,
-                            totalDurationMs = durationMs
-                    )
+                recordingPipeline.renderSegment(
+                    wavFile = audioFile,
+                    avatarUrl = avatarUrl,
+                    startMs = start,
+                    segmentDurationMs = clipDuration,
+                    chunkLabel = "${index + 1}/$totalParts"
+                )
             segments.add(file)
         }
         return segments
     }
 
-    private fun shareFiles(files: List<File>) {
-        val uris = ArrayList<Uri>()
-        files.forEach { file ->
-            val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
-            uris.add(uri)
+    private suspend fun uploadVideo(videoFile: File): String = withContext(Dispatchers.IO) {
+        val textPlain = "text/plain".toMediaType()
+        val mediaType = "video/mp4"
+
+        val initResponse =
+            repository.api.initUpload(
+                "INIT".toRequestBody(textPlain),
+                videoFile.length().toString().toRequestBody(textPlain),
+                mediaType.toRequestBody(textPlain),
+                "tweet_video".toRequestBody(textPlain)
+            )
+
+        FileInputStream(videoFile).use { input ->
+            val buffer = ByteArray(CHUNK_SIZE)
+            var segmentIndex = 0
+            while (true) {
+                val bytesRead = input.read(buffer)
+                if (bytesRead <= 0) break
+                val chunk = buffer.copyOf(bytesRead)
+                val mediaBody =
+                    chunk.toRequestBody("application/octet-stream".toMediaTypeOrNull())
+                val mediaPart = MultipartBody.Part.createFormData("media", "chunk", mediaBody)
+                repository.api.appendUpload(
+                    "APPEND".toRequestBody(textPlain),
+                    initResponse.media_id_string.toRequestBody(textPlain),
+                    segmentIndex.toString().toRequestBody(textPlain),
+                    mediaPart
+                )
+                segmentIndex++
+            }
         }
 
-        val intent =
-                Intent().apply {
-                    if (uris.size == 1) {
-                        action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_STREAM, uris[0])
-                        type = "video/mp4"
-                    } else {
-                        action = Intent.ACTION_SEND_MULTIPLE
-                        putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
-                        type = "video/mp4"
-                    }
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    // Try to target X app directly for better UX
-                    setPackage("com.twitter.android")
-                }
+        val finalizeResponse =
+            repository.api.finalizeUpload(
+                "FINALIZE".toRequestBody(textPlain),
+                initResponse.media_id_string.toRequestBody(textPlain)
+            )
 
-        try {
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            // Fallback to chooser if X app is not installed
-            intent.setPackage(null)
-            val chooser = Intent.createChooser(intent, "Share Video")
-            chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(chooser)
+        waitForProcessing(
+            mediaId = initResponse.media_id_string,
+            response = finalizeResponse,
+            textMediaType = textPlain
+        )
+        initResponse.media_id_string
+    }
+
+    private suspend fun waitForProcessing(
+        mediaId: String,
+        response: com.echox.app.data.api.MediaFinalizeResponse,
+        textMediaType: MediaType
+    ) {
+        var processingInfo = response.processing_info
+        while (processingInfo != null && processingInfo.state != "succeeded") {
+            if (processingInfo.state == "failed") {
+                throw IllegalStateException("Media processing failed")
+            }
+            val delaySeconds = processingInfo.check_after_secs ?: 2
+            delay(delaySeconds * 1000L)
+            processingInfo =
+                repository.api.checkUploadStatus(
+                        "STATUS".toRequestBody(textMediaType),
+                        mediaId.toRequestBody(textMediaType)
+                    )
+                    .processing_info
         }
+    }
+
+    private suspend fun postThread(mediaIds: List<String>, onStatus: (String) -> Unit) {
+        onStatus("Posting to X…")
+        var replyToId: String? = null
+        mediaIds.forEachIndexed { index, mediaId ->
+            val text =
+                if (mediaIds.size > 1) "Voice Note Part ${index + 1}/${mediaIds.size}"
+                else "Voice Note via EchoX"
+            val request =
+                TweetRequest(
+                    text = text,
+                    media = MediaIds(listOf(mediaId)),
+                    reply = replyToId?.let { ReplyData(it) }
+                )
+            val response = repository.api.postTweet(request)
+            replyToId = response.data.id
+        }
+        onStatus("Shared successfully!")
     }
 
     companion object {
+        private const val PREMIUM_DURATION_LIMIT_SEC = 7200
         private const val STANDARD_DURATION_LIMIT_SEC = 140
+        private const val CHUNK_SIZE = 4 * 1024 * 1024
         private val STANDARD_SEGMENT_MS = STANDARD_DURATION_LIMIT_SEC * 1000L
     }
 }
+

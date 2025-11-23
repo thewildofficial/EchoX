@@ -29,86 +29,115 @@ class XApiService {
                                     }
                                 }
                             }
-                    level = LogLevel.INFO
+                    level = LogLevel.BODY
                 }
             }
 
-    /** Upload a video file to X Media API Returns media_id needed for tweet creation */
+    /** Upload a video file to X Media API (V2) Returns media_id needed for tweet creation */
     suspend fun uploadMedia(videoFile: File, accessToken: String): String? {
         return try {
-            // X Media Upload is chunked - INIT, APPEND, FINALIZE
-            val response: HttpResponse =
-                    client.submitFormWithBinaryData(
-                            url = "https://upload.twitter.com/1.1/media/upload.json",
-                            formData =
-                                    formData {
-                                        // INIT phase
-                                        append("command", "INIT")
-                                        append("total_bytes", videoFile.length().toString())
-                                        append("media_type", "video/mp4")
-                                        append("media_category", "tweet_video")
-                                    }
-                    ) { header("Authorization", "Bearer $accessToken") }
+            val fileSize = videoFile.length()
+            // 1. INIT
+            val initResponse: HttpResponse =
+                    client.post("https://api.twitter.com/2/media/upload/initialize") {
+                        header("Authorization", "Bearer $accessToken")
+                        contentType(ContentType.Application.Json)
+                        setBody(mapOf("media_category" to "tweet_video", "total_bytes" to fileSize))
+                    }
 
-            val initResponse = response.bodyAsText()
+            val initBody = initResponse.bodyAsText()
             try {
-                Log.d("XApi", "Upload INIT: $initResponse")
+                Log.d("XApi", "Upload INIT: $initBody")
             } catch (e: RuntimeException) {
-                println("XApi: Upload INIT: $initResponse")
+                println("XApi: Upload INIT: $initBody")
             }
 
-            // Extract media_id from response (simplified - need proper JSON parsing)
-            val mediaId = extractMediaId(initResponse) ?: return null
+            // Extract media_id and media_key from JSON response
+            // Response format: {"data":{"id":"...","media_key":"..."}}
+            val mediaId = extractJsonValue(initBody, "id") ?: return null
 
-            // APPEND phase (upload actual file in chunks)
-            val chunkSize = 5 * 1024 * 1024 // 5MB chunks
+            // 2. APPEND (Chunked Upload)
+            // V2 requires small chunks (e.g. 1MB) to avoid 413 Payload Too Large
+            val chunkSize = 1 * 1024 * 1024
             val bytes = videoFile.readBytes()
             var segmentIndex = 0
 
             bytes.toList().chunked(chunkSize).forEach { chunk ->
-                client.submitFormWithBinaryData(
-                        url = "https://upload.twitter.com/1.1/media/upload.json",
-                        formData =
-                                formData {
-                                    append("command", "APPEND")
-                                    append("media_id", mediaId)
-                                    append("segment_index", segmentIndex.toString())
-                                    append(
-                                            "media",
-                                            chunk.toByteArray(),
-                                            Headers.build {
-                                                append(HttpHeaders.ContentType, "video/mp4")
-                                                append(
-                                                        HttpHeaders.ContentDisposition,
-                                                        "filename=video.mp4"
-                                                )
-                                            }
-                                    )
-                                }
-                ) { header("Authorization", "Bearer $accessToken") }
+                val appendResponse =
+                        client.submitFormWithBinaryData(
+                                url = "https://api.twitter.com/2/media/upload/$mediaId/append",
+                                formData =
+                                        formData {
+                                            append("segment_index", segmentIndex.toString())
+                                            // NOTE: Do NOT send media_id in body for V2 APPEND,
+                                            // it's in the URL
+                                            append(
+                                                    "media",
+                                                    chunk.toByteArray(),
+                                                    Headers.build {
+                                                        append(
+                                                                HttpHeaders.ContentType,
+                                                                "application/octet-stream"
+                                                        )
+                                                        append(
+                                                                HttpHeaders.ContentDisposition,
+                                                                "filename=video.mp4"
+                                                        )
+                                                    }
+                                            )
+                                        }
+                        ) { header("Authorization", "Bearer $accessToken") }
+
+                if (appendResponse.status != HttpStatusCode.NoContent &&
+                                appendResponse.status != HttpStatusCode.OK &&
+                                appendResponse.status != HttpStatusCode.Created
+                ) {
+                    val errorBody = appendResponse.bodyAsText()
+                    println("XApi: Append failed for segment $segmentIndex: $errorBody")
+                    return null
+                }
                 segmentIndex++
             }
 
-            // FINALIZE phase
-            client.submitFormWithBinaryData(
-                    url = "https://upload.twitter.com/1.1/media/upload.json",
-                    formData =
-                            formData {
-                                append("command", "FINALIZE")
-                                append("media_id", mediaId)
-                            }
-            ) { header("Authorization", "Bearer $accessToken") }
+            // 3. FINALIZE
+            val finalizeResponse: HttpResponse =
+                    client.post("https://api.twitter.com/2/media/upload/$mediaId/finalize") {
+                        header("Authorization", "Bearer $accessToken")
+                        contentType(ContentType.Application.Json)
+                        setBody(mapOf("media_id" to mediaId))
+                    }
 
+            val finalizeBody = finalizeResponse.bodyAsText()
             try {
-                Log.d("XApi", "Media uploaded: $mediaId")
+                Log.d("XApi", "Media Finalize: $finalizeBody")
             } catch (e: RuntimeException) {
-                println("XApi: Media uploaded: $mediaId")
+                println("XApi: Media Finalize: $finalizeBody")
             }
+
+            // Check for processing info and wait if needed
+            if (finalizeBody.contains("processing_info")) {
+                // Simple wait for small videos (robust polling would be better but complex without
+                // JSON parsing)
+                // The Python test showed 1s wait was enough for small files.
+                // We'll wait 2 seconds to be safe.
+                try {
+                    kotlinx.coroutines.delay(2000)
+                } catch (e: Exception) {
+                    Thread.sleep(2000)
+                }
+            }
+
             mediaId
         } catch (e: Exception) {
             Log.e("XApi", "Media upload failed", e)
             null
         }
+    }
+
+    // Helper to extract value from JSON (simple regex)
+    private fun extractJsonValue(json: String, key: String): String? {
+        val regex = """"$key"\s*:\s*"([^"]+)"""".toRegex()
+        return regex.find(json)?.groupValues?.get(1)
     }
 
     /** Create a tweet with optional media and reply-to Returns tweet ID if successful */
@@ -230,6 +259,36 @@ class XApiService {
             )
         }
         return result?.takeIf { it.isNotBlank() }
+    }
+
+    /** Check media processing status (STATUS command) */
+    suspend fun checkMediaStatus(mediaId: String, accessToken: String): Boolean {
+        return try {
+            val response: HttpResponse =
+                    client.get("https://upload.twitter.com/1.1/media/upload.json") {
+                        parameter("command", "STATUS")
+                        parameter("media_id", mediaId)
+                        header("Authorization", "Bearer $accessToken")
+                    }
+
+            val responseText = response.bodyAsText()
+            try {
+                Log.d("XApi", "Media Status: $responseText")
+            } catch (e: RuntimeException) {
+                println("XApi: Media Status: $responseText")
+            }
+
+            // Parse state
+            if (responseText.contains(""""state":"succeeded"""")) return true
+            if (responseText.contains(""""state":"failed"""")) return false
+            // If processing_info is missing, it might be already done or small file
+            if (!responseText.contains("processing_info")) return true
+
+            return false // Still processing (pending/in_progress)
+        } catch (e: Exception) {
+            Log.e("XApi", "Check status failed", e)
+            false
+        }
     }
 
     fun close() {

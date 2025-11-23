@@ -11,3 +11,11 @@ local.properties
 node_modules/
 **/build/
 *.log
+/app/src/test/resources
+
+
+.env
+get_x_token.py
+test_upload_v2.py
+upload_test.sh
+*.mp4

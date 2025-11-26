@@ -11,11 +11,32 @@ local.properties
 node_modules/
 **/build/
 *.log
-/app/src/test/resources
 
-
+# Sensitive configuration files
 .env
-get_x_token.py
-test_upload_v2.py
-upload_test.sh
+*.env
+local.properties
+
+# Test resources (may contain test videos)
+/app/src/test/resources/
+
+# Generated test videos
 *.mp4
+*.mov
+*.avi
+
+# Testing scripts output (may contain tokens)
+scripts/tokens/
+scripts/*.token
+scripts/.credentials
+
+# Python virtual environments
+.venv/
+venv/
+scripts/.venv/
+scripts/venv/
+__pycache__/
+*.pyc
+*.pyo
+.uv/
+uv.lock

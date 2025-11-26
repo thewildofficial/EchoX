@@ -45,17 +45,23 @@ class AuthManager(private val context: Context) {
                                 ResponseTypeValues.CODE,
                                 redirectUri
                         )
-                        .setScopes("tweet.read", "tweet.write", "users.read", "offline.access")
+                        .setScopes(
+                                "tweet.read",
+                                "tweet.write",
+                                "users.read",
+                                "offline.access",
+                                "media.write"
+                        )
                         .build()
 
         return authService.getAuthorizationRequestIntent(authRequest)
     }
 
     fun handleAuthResponse(
-        intent: Intent?,
-        repository: XRepository,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
+            intent: Intent?,
+            repository: XRepository,
+            onSuccess: () -> Unit,
+            onError: (String) -> Unit
     ) {
         if (intent == null) {
             mainHandler.post { onError("Authentication canceled") }
@@ -74,7 +80,8 @@ class AuthManager(private val context: Context) {
                         mainHandler.post { onSuccess() }
                     } else {
                         val message =
-                            tokenException?.errorDescription ?: "Unable to complete authentication."
+                                tokenException?.errorDescription
+                                        ?: "Unable to complete authentication."
                         mainHandler.post { onError(message) }
                     }
                 }

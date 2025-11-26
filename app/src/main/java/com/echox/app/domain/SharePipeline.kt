@@ -42,33 +42,46 @@ class SharePipeline(private val context: Context, private val repository: XRepos
                     )
                 }
 
-        // Try X API thread posting first if preferred and user is logged in
-        if (preferXThread && user != null && videos.size > 1) {
-            // Get user's OAuth access token
-            val accessToken = repository.getAccessToken()
-            if (accessToken.isNullOrBlank()) {
-                onStatus("Not logged in to X, using share sheet...")
-            } else {
-                onStatus("Posting thread to X...")
-                val success =
-                        xApiService.postThread(
-                                videos = videos,
-                                baseText = "Check out my audio recording!",
-                                accessToken = accessToken,
-                                onProgress = onStatus
-                        )
+        // DEBUG: Check why X thread might be skipped
+        val hasToken = !repository.getAccessToken().isNullOrBlank()
+        onStatus(
+                "Debug: PreferX=$preferXThread, HasToken=$hasToken, User=${if (user!=null) "OK" else "NULL"}, Videos=${videos.size}"
+        )
 
-                if (success) {
-                    onStatus("Thread posted successfully!")
-                    return
-                } else {
-                    onStatus("X thread failed, falling back to share sheet...")
-                }
+        // Try X API thread posting first if preferred and we have a token
+        // NOTE: We don't require user profile - it's just for UI display. Token is what matters for
+        // API calls.
+        if (preferXThread && hasToken && videos.isNotEmpty()) {
+            // Get user's OAuth access token
+            val accessToken = repository.getAccessToken()!!
+            onStatus("Posting thread to X... (Token: ${accessToken.take(4)}...)")
+            val success =
+                    xApiService.postThread(
+                            videos = videos,
+                            baseText = "Check out my audio recording!",
+                            accessToken = accessToken,
+                            onProgress = onStatus
+                    )
+
+            if (success) {
+                onStatus("Thread posted successfully!")
+                return
+            } else {
+                val msg = "X thread failed (postThread=false). Check previous status msgs."
+                android.util.Log.e("EchoX_ERROR", msg)
+                onStatus(msg)
+                // Do NOT return, let it fall back to share sheet so user can still share
             }
+        } else {
+            if (!hasToken) onStatus("Skipped X: No token")
+            if (videos.isEmpty()) onStatus("Skipped X: No videos")
+            if (preferXThread) onStatus("X thread skipped (Token=$hasToken, Videos=${videos.size})")
         }
 
         // Fallback to native share sheet
-        onStatus("Opening share sheet...")
+        val debugInfo =
+                "Debug: PreferX=$preferXThread, User=${if (user!=null) "OK" else "NULL"}, Videos=${videos.size}"
+        onStatus("Opening share sheet... ($debugInfo)")
         shareFiles(videos)
         onStatus("Shared!")
     }

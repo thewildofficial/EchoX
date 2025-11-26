@@ -23,7 +23,7 @@ class XApiService {
                             object : Logger {
                                 override fun log(message: String) {
                                     try {
-                                        Log.d("XApi", message)
+                                        println("XApi: $message")
                                     } catch (e: RuntimeException) {
                                         println("XApi: $message")
                                     }
@@ -34,7 +34,11 @@ class XApiService {
             }
 
     /** Upload a video file to X Media API (V2) Returns media_id needed for tweet creation */
-    suspend fun uploadMedia(videoFile: File, accessToken: String): String? {
+    suspend fun uploadMedia(
+            videoFile: File,
+            accessToken: String,
+            onError: (String) -> Unit = {}
+    ): String? {
         return try {
             val fileSize = videoFile.length()
             // 1. INIT
@@ -47,56 +51,79 @@ class XApiService {
 
             val initBody = initResponse.bodyAsText()
             try {
-                Log.d("XApi", "Upload INIT: $initBody")
+                println("XApi: Upload INIT: $initBody")
             } catch (e: RuntimeException) {
                 println("XApi: Upload INIT: $initBody")
             }
 
-            // Extract media_id and media_key from JSON response
-            // Response format: {"data":{"id":"...","media_key":"..."}}
-            val mediaId = extractJsonValue(initBody, "id") ?: return null
+            if (initResponse.status != HttpStatusCode.Accepted &&
+                            initResponse.status != HttpStatusCode.Created &&
+                            initResponse.status != HttpStatusCode.OK
+            ) {
+                val errorBody = initResponse.bodyAsText()
+                println("XApi: Init failed: $errorBody")
+                onError("Init failed: $errorBody")
+                return null
+            }
+
+            // Extract media_id from V2 response
+            // V2 Response format: {"data":{"id":"123","media_key":"7_123"}}
+            val mediaId = extractJsonValue(initBody, "id")
+
+            if (mediaId == null) {
+                onError("Init failed: No id in response")
+                return null
+            }
 
             // 2. APPEND (Chunked Upload)
             // V2 requires small chunks (e.g. 1MB) to avoid 413 Payload Too Large
             val chunkSize = 1 * 1024 * 1024
-            val bytes = videoFile.readBytes()
+            val buffer = ByteArray(chunkSize)
             var segmentIndex = 0
 
-            bytes.toList().chunked(chunkSize).forEach { chunk ->
-                val appendResponse =
-                        client.submitFormWithBinaryData(
-                                url = "https://api.twitter.com/2/media/upload/$mediaId/append",
-                                formData =
-                                        formData {
-                                            append("segment_index", segmentIndex.toString())
-                                            // NOTE: Do NOT send media_id in body for V2 APPEND,
-                                            // it's in the URL
-                                            append(
-                                                    "media",
-                                                    chunk.toByteArray(),
-                                                    Headers.build {
-                                                        append(
-                                                                HttpHeaders.ContentType,
-                                                                "application/octet-stream"
-                                                        )
-                                                        append(
-                                                                HttpHeaders.ContentDisposition,
-                                                                "filename=video.mp4"
-                                                        )
-                                                    }
-                                            )
-                                        }
-                        ) { header("Authorization", "Bearer $accessToken") }
+            videoFile.inputStream().use { input ->
+                var bytesRead = input.read(buffer)
+                while (bytesRead != -1) {
+                    // Create a copy of the valid bytes if read < chunkSize
+                    val chunk = if (bytesRead == chunkSize) buffer else buffer.copyOf(bytesRead)
 
-                if (appendResponse.status != HttpStatusCode.NoContent &&
-                                appendResponse.status != HttpStatusCode.OK &&
-                                appendResponse.status != HttpStatusCode.Created
-                ) {
-                    val errorBody = appendResponse.bodyAsText()
-                    println("XApi: Append failed for segment $segmentIndex: $errorBody")
-                    return null
+                    val appendResponse =
+                            client.submitFormWithBinaryData(
+                                    url = "https://api.twitter.com/2/media/upload/$mediaId/append",
+                                    formData =
+                                            formData {
+                                                append("segment_index", segmentIndex.toString())
+                                                // NOTE: Do NOT send media_id in body for V2 APPEND,
+                                                // it's in the URL
+                                                append(
+                                                        "media",
+                                                        chunk,
+                                                        Headers.build {
+                                                            append(
+                                                                    HttpHeaders.ContentType,
+                                                                    "application/octet-stream"
+                                                            )
+                                                            append(
+                                                                    HttpHeaders.ContentDisposition,
+                                                                    "filename=video.mp4"
+                                                            )
+                                                        }
+                                                )
+                                            }
+                            ) { header("Authorization", "Bearer $accessToken") }
+
+                    if (appendResponse.status != HttpStatusCode.NoContent &&
+                                    appendResponse.status != HttpStatusCode.OK &&
+                                    appendResponse.status != HttpStatusCode.Created
+                    ) {
+                        val errorBody = appendResponse.bodyAsText()
+                        println("XApi: Append failed for segment $segmentIndex: $errorBody")
+                        onError("Append failed (seg $segmentIndex): $errorBody")
+                        return null
+                    }
+                    segmentIndex++
+                    bytesRead = input.read(buffer)
                 }
-                segmentIndex++
             }
 
             // 3. FINALIZE
@@ -104,16 +131,24 @@ class XApiService {
                     client.post("https://api.twitter.com/2/media/upload/$mediaId/finalize") {
                         header("Authorization", "Bearer $accessToken")
                         contentType(ContentType.Application.Json)
-                        setBody(mapOf("media_id" to mediaId))
+                        setBody("""{"media_id": "$mediaId"}""")
                     }
 
             val finalizeBody = finalizeResponse.bodyAsText()
             try {
-                Log.d("XApi", "Media Finalize: $finalizeBody")
+                println("XApi: Media Finalize: $finalizeBody")
             } catch (e: RuntimeException) {
                 println("XApi: Media Finalize: $finalizeBody")
             }
 
+            if (finalizeResponse.status != HttpStatusCode.Created &&
+                            finalizeResponse.status != HttpStatusCode.OK
+            ) {
+                val errorBody = finalizeResponse.bodyAsText()
+                println("XApi: Finalize failed: $errorBody")
+                onError("Finalize failed: $errorBody")
+                return null
+            }
             // Check for processing info and wait if needed
             if (finalizeBody.contains("processing_info")) {
                 // Simple wait for small videos (robust polling would be better but complex without
@@ -129,7 +164,8 @@ class XApiService {
 
             mediaId
         } catch (e: Exception) {
-            Log.e("XApi", "Media upload failed", e)
+            println("XApi ERROR: Media upload failed: ${e.message}")
+            e.printStackTrace()
             null
         }
     }
@@ -163,7 +199,7 @@ class XApiService {
 
             val responseText = response.bodyAsText()
             try {
-                Log.d("XApi", "Tweet created: $responseText")
+                println("XApi: Tweet created: $responseText")
             } catch (e: RuntimeException) {
                 println("XApi: Tweet created: $responseText")
             }
@@ -171,7 +207,8 @@ class XApiService {
             // Extract tweet ID (simplified)
             extractTweetId(responseText)
         } catch (e: Exception) {
-            Log.e("XApi", "Tweet creation failed", e)
+            println("XApi ERROR: Tweet creation failed: ${e.message}")
+            e.printStackTrace()
             null
         }
     }
@@ -190,13 +227,16 @@ class XApiService {
             val totalParts = videos.size
 
             onProgress("Uploading video $partNumber/$totalParts...")
-            val mediaId = uploadMedia(video, accessToken)
+            val mediaId =
+                    uploadMedia(video, accessToken) { errorMsg ->
+                        onProgress("Upload Error: $errorMsg")
+                    }
             if (mediaId.isNullOrBlank()) {
-                Log.e("XApi", "Media upload returned null/empty for video $partNumber")
-                onProgress("Upload failed for video $partNumber. Check logs.")
+                println("XApi ERROR: Media upload returned null/empty for video $partNumber")
+                onProgress("Upload failed for video $partNumber. See above.")
                 return false
             }
-            Log.d("XApi", "Video $partNumber uploaded, mediaId: $mediaId")
+            println("XApi: Video $partNumber uploaded, mediaId: $mediaId")
 
             onProgress("Posting tweet $partNumber/$totalParts...")
             val tweetText =
@@ -215,11 +255,11 @@ class XApiService {
                     )
 
             if (tweetId.isNullOrBlank()) {
-                Log.e("XApi", "Tweet creation returned null/empty for part $partNumber")
+                println("XApi ERROR: Tweet creation returned null/empty for part $partNumber")
                 onProgress("Failed to post tweet $partNumber")
                 return false
             }
-            Log.d("XApi", "Tweet $partNumber posted, tweetId: $tweetId")
+            println("XApi: Tweet $partNumber posted, tweetId: $tweetId")
 
             previousTweetId = tweetId
             onProgress("Posted $partNumber/$totalParts successfully")
@@ -273,7 +313,7 @@ class XApiService {
 
             val responseText = response.bodyAsText()
             try {
-                Log.d("XApi", "Media Status: $responseText")
+                println("XApi: Media Status: $responseText")
             } catch (e: RuntimeException) {
                 println("XApi: Media Status: $responseText")
             }
@@ -286,7 +326,8 @@ class XApiService {
 
             return false // Still processing (pending/in_progress)
         } catch (e: Exception) {
-            Log.e("XApi", "Check status failed", e)
+            println("XApi ERROR: Check status failed: ${e.message}")
+            e.printStackTrace()
             false
         }
     }

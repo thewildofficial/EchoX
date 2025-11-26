@@ -33,7 +33,7 @@ fun Navigation() {
             }
         }
         if (isAuthenticated) {
-            repository.refreshUserProfile()
+            repository.refreshUserProfile(context)
         }
     }
 

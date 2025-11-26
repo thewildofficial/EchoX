@@ -102,11 +102,18 @@ dependencies {
     // Image Loading
     implementation("io.coil-kt:coil-compose:2.5.0")
 
-    // Ktor for X API
+    // Ktor HTTP client
+    implementation("io.ktor:ktor-client-core:2.3.7")
     implementation("io.ktor:ktor-client-cio:2.3.7")
     implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
     implementation("io.ktor:ktor-serialization-gson:2.3.7")
     implementation("io.ktor:ktor-client-logging:2.3.7")
+    
+    // SLF4J Android for app runtime
+    implementation("org.slf4j:slf4j-android:1.7.36")
+    
+    // SLF4J Simple for unit tests (instead of Android logger)
+    testImplementation("org.slf4j:slf4j-simple:1.7.36")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

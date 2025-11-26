@@ -138,9 +138,22 @@ fun PreviewScreen(
             Text(text = statusMessage, color = Color.White.copy(alpha = 0.9f))
         }
 
+        // DEBUG INFO
+        val debugToken = repository.getAccessToken()
+        Text(
+                text =
+                        "Debug: User=${if (user != null) "OK" else "NULL"}, Token=${if (!debugToken.isNullOrBlank()) "OK" else "MISSING"}",
+                color = Color.Yellow,
+                style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 8.dp)
+        )
+
         Column(modifier = Modifier.fillMaxWidth()) {
             Button(
                     onClick = {
+                        Toast.makeText(context, "[DEBUG] Share button clicked!", Toast.LENGTH_LONG)
+                                .show()
+
                         if (audioFile == null || videoFile == null) {
                             Toast.makeText(context, "Missing recording", Toast.LENGTH_SHORT).show()
                             return@Button
@@ -148,6 +161,14 @@ fun PreviewScreen(
                         if (isSharing) return@Button
                         isSharing = true
                         statusMessage = "Preparing upload…"
+
+                        Toast.makeText(
+                                        context,
+                                        "[DEBUG] User=${if(user!=null)"OK" else "NULL"}, Token=${if(repository.getAccessToken()!=null)"OK" else "NULL"}",
+                                        Toast.LENGTH_LONG
+                                )
+                                .show()
+
                         val avatarUrl = user?.profile_image_url?.replace("_normal", "")
                         scope.launch {
                             runCatching {
@@ -158,7 +179,15 @@ fun PreviewScreen(
                                         durationMs = durationMs,
                                         avatarUrl = avatarUrl,
                                         amplitudes = amplitudes,
-                                        onStatus = { status -> statusMessage = status }
+                                        onStatus = { status ->
+                                            statusMessage = status
+                                            Toast.makeText(
+                                                            context,
+                                                            "[STATUS] $status",
+                                                            Toast.LENGTH_SHORT
+                                                    )
+                                                    .show()
+                                        }
                                 )
                             }
                                     .onSuccess {
@@ -171,6 +200,12 @@ fun PreviewScreen(
                                     }
                                     .onFailure { error ->
                                         isSharing = false
+                                        Toast.makeText(
+                                                        context,
+                                                        "[ERROR] ${error.message}",
+                                                        Toast.LENGTH_LONG
+                                                )
+                                                .show()
                                         statusMessage =
                                                 "Failed: ${error.message ?: "Unknown error"}"
                                     }

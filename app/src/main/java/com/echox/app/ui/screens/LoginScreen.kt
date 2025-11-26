@@ -1,9 +1,8 @@
-
 package com.echox.app.ui.screens
 
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,109 +44,103 @@ fun LoginScreen(navController: NavController, repository: XRepository) {
     var isAuthenticating by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    DisposableEffect(Unit) {
-        onDispose { authManager.dispose() }
-    }
+    DisposableEffect(Unit) { onDispose { authManager.dispose() } }
 
-    val authLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        val data = result.data
-        if (data == null) {
-            Toast.makeText(context, "Authentication canceled.", Toast.LENGTH_SHORT).show()
-            return@rememberLauncherForActivityResult
-        }
-
-        isAuthenticating = true
-        authManager.handleAuthResponse(
-            intent = data,
-            repository = repository,
-            onSuccess = {
-                scope.launch {
-                    repository.refreshUserProfile()
-                    isAuthenticating = false
-                    navController.navigate("record") {
-                        popUpTo("login") { inclusive = true }
-                    }
+    val authLauncher =
+            rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.StartActivityForResult()
+            ) { result ->
+                val data = result.data
+                if (data == null) {
+                    Toast.makeText(context, "Authentication canceled.", Toast.LENGTH_SHORT).show()
+                    return@rememberLauncherForActivityResult
                 }
-            },
-            onError = { message ->
-                isAuthenticating = false
-                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+
+                isAuthenticating = true
+                authManager.handleAuthResponse(
+                        intent = data,
+                        repository = repository,
+                        onSuccess = {
+                            scope.launch {
+                                repository.refreshUserProfile(context)
+                                isAuthenticating = false
+                                navController.navigate("record") {
+                                    popUpTo("login") { inclusive = true }
+                                }
+                            }
+                        },
+                        onError = { message ->
+                            isAuthenticating = false
+                            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                        }
+                )
             }
-        )
-    }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black),
-        contentAlignment = Alignment.Center
+            modifier = Modifier.fillMaxSize().background(Color.Black),
+            contentAlignment = Alignment.Center
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
         ) {
             // X Logo / EchoX Branding
             Text(
-                text = "𝕏",
-                fontSize = 64.sp,
-                color = Color.White,
-                modifier = Modifier.padding(bottom = 16.dp)
+                    text = "𝕏",
+                    fontSize = 64.sp,
+                    color = Color.White,
+                    modifier = Modifier.padding(bottom = 16.dp)
             )
-            
+
             Text(
-                text = "Log in to EchoX",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                modifier = Modifier.padding(bottom = 8.dp)
+                    text = "Log in to EchoX",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    modifier = Modifier.padding(bottom = 8.dp)
             )
-            
+
             Text(
-                text = "Create and share audio notes seamlessly.",
-                fontSize = 14.sp,
-                color = Color.White.copy(alpha = 0.6f),
-                modifier = Modifier.padding(bottom = 48.dp)
+                    text = "Create and share audio notes seamlessly.",
+                    fontSize = 14.sp,
+                    color = Color.White.copy(alpha = 0.6f),
+                    modifier = Modifier.padding(bottom = 48.dp)
             )
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             Button(
-                enabled = isConfigured && !isAuthenticating,
-                onClick = {
-                    val authIntent = authManager.getAuthIntent()
-                    if (authIntent != null) {
-                        authLauncher.launch(authIntent)
-                    } else {
-                        configurationError?.let {
-                            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+                    enabled = isConfigured && !isAuthenticating,
+                    onClick = {
+                        val authIntent = authManager.getAuthIntent()
+                        if (authIntent != null) {
+                            authLauncher.launch(authIntent)
+                        } else {
+                            configurationError?.let {
+                                Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+                            }
                         }
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isConfigured) Color.White else Color.White.copy(alpha = 0.4f)
-                ),
-                shape = RoundedCornerShape(24.dp),
-                modifier = Modifier
-                    .width(280.dp)
-                    .height(48.dp)
+                    },
+                    colors =
+                            ButtonDefaults.buttonColors(
+                                    containerColor =
+                                            if (isConfigured) Color.White
+                                            else Color.White.copy(alpha = 0.4f)
+                            ),
+                    shape = RoundedCornerShape(24.dp),
+                    modifier = Modifier.width(280.dp).height(48.dp)
             ) {
                 Text(
-                    text = if (isAuthenticating) "Connecting…" else "Sign in with X",
-                    color = Color.Black,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                        text = if (isAuthenticating) "Connecting…" else "Sign in with X",
+                        color = Color.Black,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
                 )
             }
-            
+
             configurationError?.let {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = it,
-                    color = Color(0xFFFF6B6B),
-                    fontSize = 14.sp
-                )
+                Text(text = it, color = Color(0xFFFF6B6B), fontSize = 14.sp)
             }
         }
     }

@@ -54,7 +54,7 @@ class SharePipeline(private val context: Context, private val repository: XRepos
         if (preferXThread && hasToken && videos.isNotEmpty()) {
             // Get user's OAuth access token
             val accessToken = repository.getAccessToken()!!
-            onStatus("Posting thread to X... (Token: ${accessToken.take(4)}...)")
+            onStatus("Posting thread to X...")
             val success =
                     xApiService.postThread(
                             videos = videos,

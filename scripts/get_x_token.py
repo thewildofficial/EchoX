@@ -192,6 +192,8 @@ try:
     print("=" * 60)
     print("\n1. Add this line to your local.properties:")
     print(f"\n   X_TEST_USER_TOKEN={tokens['access_token']}")
+    print("\n⚠️  SECURITY WARNING: Never commit this token to version control or share it publicly.")
+    print("   Store it only in local.properties, which should be in .gitignore.")
     print("\n2. Run the isolation test:")
     print("\n   ./gradlew test --tests XApiIsolationTest")
     print("\n" + "=" * 60)

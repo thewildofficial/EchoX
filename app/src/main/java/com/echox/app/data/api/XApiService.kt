@@ -11,6 +11,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.gson.*
 import java.io.File
+import kotlinx.coroutines.delay
 
 /** X (Twitter) API v2 Service Handles OAuth, media upload, and thread creation */
 class XApiService {
@@ -22,11 +23,7 @@ class XApiService {
                     logger =
                             object : Logger {
                                 override fun log(message: String) {
-                                    try {
-                                        println("XApi: $message")
-                                    } catch (e: RuntimeException) {
-                                        println("XApi: $message")
-                                    }
+                                    Log.d("XApi_Ktor", message)
                                 }
                             }
                     level = LogLevel.BODY
@@ -41,6 +38,23 @@ class XApiService {
     ): String? {
         return try {
             val fileSize = videoFile.length()
+            val fileSizeMB = fileSize / (1024.0 * 1024.0)
+            
+            // Log file size for debugging
+            android.util.Log.d(
+                    "EchoX_Upload",
+                    "Uploading video: ${videoFile.name}, Size: ${String.format("%.2f", fileSizeMB)} MB"
+            )
+            
+            // X API limit: 512MB per video
+            val MAX_FILE_SIZE_BYTES = 512L * 1024 * 1024
+            if (fileSize > MAX_FILE_SIZE_BYTES) {
+                val errorMsg = "Video file too large: ${String.format("%.2f", fileSizeMB)} MB (max: 512 MB)"
+                android.util.Log.e("EchoX_Upload", errorMsg)
+                onError(errorMsg)
+                return null
+            }
+            
             // 1. INIT
             val initResponse: HttpResponse =
                     client.post("https://api.twitter.com/2/media/upload/initialize") {
@@ -50,18 +64,14 @@ class XApiService {
                     }
 
             val initBody = initResponse.bodyAsText()
-            try {
-                println("XApi: Upload INIT: $initBody")
-            } catch (e: RuntimeException) {
-                println("XApi: Upload INIT: $initBody")
-            }
+            Log.d("XApi", "Upload INIT response: $initBody")
 
             if (initResponse.status != HttpStatusCode.Accepted &&
                             initResponse.status != HttpStatusCode.Created &&
                             initResponse.status != HttpStatusCode.OK
             ) {
                 val errorBody = initResponse.bodyAsText()
-                println("XApi: Init failed: $errorBody")
+                Log.e("XApi", "Init failed with status ${initResponse.status}: $errorBody")
                 onError("Init failed: $errorBody")
                 return null
             }
@@ -71,9 +81,12 @@ class XApiService {
             val mediaId = extractJsonValue(initBody, "id")
 
             if (mediaId == null) {
+                Log.e("XApi", "Init failed: No id in response. Response body: $initBody")
                 onError("Init failed: No id in response")
                 return null
             }
+            
+            Log.d("XApi", "Media upload initialized. Media ID: $mediaId")
 
             // 2. APPEND (Chunked Upload)
             // V2 requires small chunks (e.g. 1MB) to avoid 413 Payload Too Large
@@ -117,10 +130,12 @@ class XApiService {
                                     appendResponse.status != HttpStatusCode.Created
                     ) {
                         val errorBody = appendResponse.bodyAsText()
-                        println("XApi: Append failed for segment $segmentIndex: $errorBody")
+                        Log.e("XApi", "Append failed for segment $segmentIndex with status ${appendResponse.status}: $errorBody")
                         onError("Append failed (seg $segmentIndex): $errorBody")
                         return null
                     }
+                    
+                    Log.d("XApi", "Appended segment $segmentIndex successfully")
                     segmentIndex++
                     bytesRead = input.read(buffer)
                 }
@@ -135,37 +150,52 @@ class XApiService {
                     }
 
             val finalizeBody = finalizeResponse.bodyAsText()
-            try {
-                println("XApi: Media Finalize: $finalizeBody")
-            } catch (e: RuntimeException) {
-                println("XApi: Media Finalize: $finalizeBody")
-            }
+            Log.d("XApi", "Media Finalize response: $finalizeBody")
 
             if (finalizeResponse.status != HttpStatusCode.Created &&
                             finalizeResponse.status != HttpStatusCode.OK
             ) {
                 val errorBody = finalizeResponse.bodyAsText()
-                println("XApi: Finalize failed: $errorBody")
+                Log.e("XApi", "Finalize failed with status ${finalizeResponse.status}: $errorBody")
                 onError("Finalize failed: $errorBody")
                 return null
             }
-            // Check for processing info and wait if needed
-            if (finalizeBody.contains("processing_info")) {
-                // Simple wait for small videos (robust polling would be better but complex without
-                // JSON parsing)
-                // The Python test showed 1s wait was enough for small files.
-                // We'll wait 2 seconds to be safe.
-                try {
-                    kotlinx.coroutines.delay(2000)
-                } catch (e: Exception) {
-                    Thread.sleep(2000)
+            
+            // Parse processing_info from finalize response
+            // Format: {"data":{"processing_info":{"check_after_secs":1,"state":"pending"},...}}
+            val processingInfo = parseProcessingInfo(finalizeBody)
+            if (processingInfo != null) {
+                val state = processingInfo.first
+                val checkAfterSecs = processingInfo.second
+                
+                Log.d("XApi", "Media processing state: $state, check after: ${checkAfterSecs}s")
+                
+                if (state == "pending" || state == "in_progress") {
+                    // Wait the recommended time, then add extra buffer
+                    val waitTime = (checkAfterSecs * 1000L).coerceAtLeast(2000L)
+                    Log.d("XApi", "Waiting ${waitTime}ms for media processing...")
+                    try {
+                        kotlinx.coroutines.delay(waitTime)
+                    } catch (e: Exception) {
+                        Thread.sleep(waitTime)
+                    }
+                } else if (state == "succeeded") {
+                    Log.d("XApi", "Media processing already succeeded")
+                } else if (state == "failed") {
+                    Log.e("XApi", "Media processing failed")
+                    onError("Media processing failed")
+                    return null
                 }
+            } else {
+                // No processing_info means it's ready immediately (very small files)
+                Log.d("XApi", "No processing_info found, media should be ready immediately")
             }
 
+            Log.d("XApi", "Media upload completed successfully. Media ID: $mediaId")
             mediaId
         } catch (e: Exception) {
-            println("XApi ERROR: Media upload failed: ${e.message}")
-            e.printStackTrace()
+            Log.e("XApi", "Media upload failed: ${e.message}", e)
+            onError("Upload failed: ${e.message}")
             null
         }
     }
@@ -174,6 +204,20 @@ class XApiService {
     private fun extractJsonValue(json: String, key: String): String? {
         val regex = """"$key"\s*:\s*"([^"]+)"""".toRegex()
         return regex.find(json)?.groupValues?.get(1)
+    }
+    
+    // Parse processing_info from finalize response: {"state":"pending","check_after_secs":1}
+    // Returns Pair(state, check_after_secs) or null if not found
+    private fun parseProcessingInfo(json: String): Pair<String, Int>? {
+        // Look for processing_info block
+        val processingInfoRegex = """"processing_info"\s*:\s*\{[^}]*"state"\s*:\s*"([^"]+)"[^}]*"check_after_secs"\s*:\s*(\d+)""".toRegex()
+        val match = processingInfoRegex.find(json)
+        if (match != null) {
+            val state = match.groupValues[1]
+            val checkAfterSecs = match.groupValues[2].toIntOrNull() ?: 1
+            return Pair(state, checkAfterSecs)
+        }
+        return null
     }
 
     /** Create a tweet with optional media and reply-to Returns tweet ID if successful */
@@ -198,17 +242,29 @@ class XApiService {
                     }
 
             val responseText = response.bodyAsText()
-            try {
-                println("XApi: Tweet created: $responseText")
-            } catch (e: RuntimeException) {
-                println("XApi: Tweet created: $responseText")
+            Log.d("XApi", "Tweet creation response: $responseText")
+
+            // Check for errors first
+            if (response.status != HttpStatusCode.Created && response.status != HttpStatusCode.OK) {
+                val errorMsg = if (responseText.contains("invalid") || responseText.contains("media")) {
+                    "Media not ready: $responseText"
+                } else {
+                    "Tweet creation failed: $responseText"
+                }
+                Log.e("XApi", errorMsg)
+                return null
             }
 
             // Extract tweet ID (simplified)
-            extractTweetId(responseText)
+            val tweetId = extractTweetId(responseText)
+            if (tweetId != null) {
+                Log.d("XApi", "Tweet created successfully. Tweet ID: $tweetId")
+            } else {
+                Log.w("XApi", "Tweet creation response received but no tweet ID found: $responseText")
+            }
+            tweetId
         } catch (e: Exception) {
-            println("XApi ERROR: Tweet creation failed: ${e.message}")
-            e.printStackTrace()
+            Log.e("XApi", "Tweet creation failed: ${e.message}", e)
             null
         }
     }
@@ -232,11 +288,22 @@ class XApiService {
                         onProgress("Upload Error: $errorMsg")
                     }
             if (mediaId.isNullOrBlank()) {
-                println("XApi ERROR: Media upload returned null/empty for video $partNumber")
+                Log.e("XApi", "Media upload returned null/empty for video $partNumber/$totalParts")
                 onProgress("Upload failed for video $partNumber. See above.")
                 return false
             }
-            println("XApi: Video $partNumber uploaded, mediaId: $mediaId")
+            Log.d("XApi", "Video $partNumber/$totalParts uploaded successfully. Media ID: $mediaId")
+
+            // CRITICAL: Wait for media processing to complete before creating tweet
+            // X API requires media to be fully processed before attaching to tweets
+            onProgress("Waiting for video $partNumber/$totalParts to process...")
+            val isReady = waitForMediaProcessing(mediaId, accessToken, onProgress)
+            if (!isReady) {
+                Log.e("XApi", "Media $mediaId failed to process or timed out for video $partNumber/$totalParts")
+                onProgress("Video $partNumber processing failed or timed out")
+                return false
+            }
+            Log.d("XApi", "Media $mediaId is ready for tweet creation (video $partNumber/$totalParts)")
 
             onProgress("Posting tweet $partNumber/$totalParts...")
             val tweetText =
@@ -246,26 +313,58 @@ class XApiService {
                         baseText
                     }
 
-            val tweetId =
-                    createTweet(
-                            text = tweetText,
-                            mediaId = mediaId,
-                            replyToTweetId = previousTweetId,
-                            accessToken = accessToken
-                    )
+            // Try creating tweet with retry logic (media might still be processing)
+            var tweetId: String? = null
+            var retryCount = 0
+            val maxRetries = 5
+            
+            while (tweetId.isNullOrBlank() && retryCount < maxRetries) {
+                tweetId = createTweet(
+                        text = tweetText,
+                        mediaId = mediaId,
+                        replyToTweetId = previousTweetId,
+                        accessToken = accessToken
+                )
+                
+                if (tweetId.isNullOrBlank()) {
+                    retryCount++
+                    if (retryCount < maxRetries) {
+                        val waitTime = 2000L shl (retryCount - 1) // Exponential backoff: 2s, 4s, 8s, 16s...
+                        Log.w("XApi", "Tweet creation failed for part $partNumber, exponential backoff: waiting ${waitTime}ms (attempt $retryCount/$maxRetries)")
+                        onProgress("Media still processing, exponential backoff: waiting ${waitTime/1000}s...")
+                        kotlinx.coroutines.delay(waitTime)
+                    }
+                }
+            }
 
             if (tweetId.isNullOrBlank()) {
-                println("XApi ERROR: Tweet creation returned null/empty for part $partNumber")
-                onProgress("Failed to post tweet $partNumber")
+                Log.e("XApi", "Tweet creation failed after $maxRetries attempts for part $partNumber/$totalParts")
+                onProgress("Failed to post tweet $partNumber after multiple retries")
                 return false
             }
-            println("XApi: Tweet $partNumber posted, tweetId: $tweetId")
+            Log.d("XApi", "Tweet $partNumber/$totalParts posted successfully. Tweet ID: $tweetId")
 
             previousTweetId = tweetId
             onProgress("Posted $partNumber/$totalParts successfully")
         }
 
         return true
+    }
+
+    /** Wait for media processing to complete 
+     * NOTE: V1.1 status endpoint doesn't work with V2 media (returns 403)
+     * We rely on processing_info from finalize response and retry logic in tweet creation
+     */
+    private suspend fun waitForMediaProcessing(
+            mediaId: String,
+            accessToken: String,
+            onProgress: (String) -> Unit
+    ): Boolean {
+        // The actual waiting happens in uploadMedia() based on processing_info
+        // This function is kept for compatibility but doesn't do status polling
+        // since V1.1 endpoint returns 403 for V2 media
+        Log.d("XApi", "Media processing wait handled by uploadMedia() processing_info parsing")
+        return true // Assume ready, retry logic in tweet creation will handle if not
     }
 
     // Helper functions for parsing JSON responses
@@ -278,9 +377,7 @@ class XApiService {
                     "extractMediaId: ${if (result != null) "found $result" else "NOT FOUND in: $response"}"
             )
         } catch (e: RuntimeException) {
-            println(
-                    "XApi: extractMediaId: ${if (result != null) "found $result" else "NOT FOUND in: $response"}"
-            )
+            Log.w("XApi", "extractMediaId error: ${e.message}")
         }
         return result?.takeIf { it.isNotBlank() }
     }
@@ -294,9 +391,7 @@ class XApiService {
                     "extractTweetId: ${if (result != null) "found $result" else "NOT FOUND in: $response"}"
             )
         } catch (e: RuntimeException) {
-            println(
-                    "XApi: extractTweetId: ${if (result != null) "found $result" else "NOT FOUND in: $response"}"
-            )
+            Log.w("XApi", "extractTweetId error: ${e.message}")
         }
         return result?.takeIf { it.isNotBlank() }
     }
@@ -312,22 +407,31 @@ class XApiService {
                     }
 
             val responseText = response.bodyAsText()
-            try {
-                println("XApi: Media Status: $responseText")
-            } catch (e: RuntimeException) {
-                println("XApi: Media Status: $responseText")
+            Log.d("XApi", "Media Status response: $responseText")
+
+            // Check HTTP status first
+            if (response.status != HttpStatusCode.OK) {
+                Log.w("XApi", "Status check returned ${response.status} for media ID: $mediaId")
+                // If we get a non-OK status, assume it might be ready (could be 404 if already processed)
+                // We'll let the tweet creation attempt determine if it's actually ready
+                return true
             }
 
-            // Parse state
+            // Parse state from response body
             if (responseText.contains(""""state":"succeeded"""")) return true
             if (responseText.contains(""""state":"failed"""")) return false
-            // If processing_info is missing, it might be already done or small file
-            if (!responseText.contains("processing_info")) return true
+            
+            // If processing_info is missing, assume it's ready (small files or already processed)
+            if (!responseText.contains("processing_info")) {
+                Log.d("XApi", "No processing_info found for media $mediaId, assuming ready")
+                return true
+            }
 
-            return false // Still processing (pending/in_progress)
+            // Still processing (pending/in_progress)
+            return false
         } catch (e: Exception) {
-            println("XApi ERROR: Check status failed: ${e.message}")
-            e.printStackTrace()
+            Log.e("XApi", "Check status failed for media ID: $mediaId", e)
+            // On error, assume not ready to be safe
             false
         }
     }

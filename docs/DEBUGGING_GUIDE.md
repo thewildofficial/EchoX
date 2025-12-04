@@ -112,3 +112,7 @@ adb logcat -s EchoX_Upload:E EchoX_Video:E EchoX_ERROR:E XApi:E AndroidRuntime:E
 - Enable `XApi_Ktor:D` tag for detailed HTTP logging
 - Note: This can be very verbose!
 
+
+
+
+

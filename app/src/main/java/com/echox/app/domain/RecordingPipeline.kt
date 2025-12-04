@@ -1,8 +1,11 @@
 package com.echox.app.domain
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.media.MediaMetadataRetriever
 import androidx.core.net.toUri
 import java.io.File
+import java.io.FileOutputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -125,6 +128,56 @@ class RecordingPipeline(private val context: Context) {
                 return videoFile
         }
 
+        /**
+         * Saves recording assets to permanent storage and returns paths
+         */
+        suspend fun saveRecordingToPermanentStorage(
+                assets: RecordingAssets
+        ): SavedRecordingPaths = withContext(Dispatchers.IO) {
+                val recordingsDir = File(context.filesDir, "recordings")
+                recordingsDir.mkdirs()
+                
+                val timestamp = System.currentTimeMillis()
+                val recordingId = "recording_$timestamp"
+                
+                // Copy files to permanent storage
+                val permanentAudio = File(recordingsDir, "$recordingId.wav")
+                val permanentVideo = File(recordingsDir, "$recordingId.mp4")
+                val permanentAmplitudes = File(recordingsDir, "${recordingId}_amplitudes.txt")
+                
+                assets.audioFile.copyTo(permanentAudio, overwrite = true)
+                assets.videoFile.copyTo(permanentVideo, overwrite = true)
+                assets.amplitudesFile.copyTo(permanentAmplitudes, overwrite = true)
+                
+                // Generate thumbnail from video
+                val thumbnailFile = File(recordingsDir, "${recordingId}_thumb.png")
+                generateThumbnail(permanentVideo, thumbnailFile)
+                
+                SavedRecordingPaths(
+                        audioPath = permanentAudio.absolutePath,
+                        videoPath = permanentVideo.absolutePath,
+                        amplitudesPath = permanentAmplitudes.absolutePath,
+                        thumbnailPath = thumbnailFile.absolutePath
+                )
+        }
+        
+        private suspend fun generateThumbnail(videoFile: File, outputFile: File) = withContext(Dispatchers.IO) {
+                val retriever = MediaMetadataRetriever()
+                try {
+                        retriever.setDataSource(videoFile.absolutePath)
+                        val bitmap = retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+                        bitmap?.let {
+                                FileOutputStream(outputFile).use { out ->
+                                        it.compress(Bitmap.CompressFormat.PNG, 90, out)
+                                }
+                        }
+                } catch (e: Exception) {
+                        android.util.Log.e("RecordingPipeline", "Failed to generate thumbnail", e)
+                } finally {
+                        retriever.release()
+                }
+        }
+
         private suspend fun formatDuration(durationMs: Long): String =
                 withContext(Dispatchers.Default) {
                         val totalSeconds = (durationMs / 1000).coerceAtLeast(0)
@@ -133,3 +186,10 @@ class RecordingPipeline(private val context: Context) {
                         "%d:%02d".format(minutes, seconds)
                 }
 }
+
+data class SavedRecordingPaths(
+        val audioPath: String,
+        val videoPath: String,
+        val amplitudesPath: String,
+        val thumbnailPath: String
+)

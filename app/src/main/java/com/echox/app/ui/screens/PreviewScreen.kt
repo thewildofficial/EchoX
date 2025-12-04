@@ -21,7 +21,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+<<<<<<< HEAD
 import androidx.compose.ui.text.input.ImeAction
+=======
+>>>>>>> 24c1f39 (feat: Add Recording History and Playback Library)
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -42,7 +45,10 @@ import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
+import com.echox.app.data.repository.RecordingRepository
 import com.echox.app.data.repository.XRepository
+import com.echox.app.data.database.Recording
+import com.echox.app.domain.RecordingPipeline
 import com.echox.app.domain.SharePipeline
 import java.io.File
 import kotlinx.coroutines.launch
@@ -76,6 +82,8 @@ fun PreviewScreen(
                                 ?: emptyList()
                 }
         val sharePipeline = remember { SharePipeline(context, repository) }
+        val recordingPipeline = remember { RecordingPipeline(context) }
+        val recordingRepository = remember { RecordingRepository(context) }
         val scope = rememberCoroutineScope()
 
         val exoPlayer =
@@ -93,9 +101,56 @@ fun PreviewScreen(
 
         var statusMessage by remember { mutableStateOf("") }
         var isSharing by remember { mutableStateOf(false) }
+<<<<<<< HEAD
         var customTweetText by remember { mutableStateOf("") }
         
         val MAX_TWEET_LENGTH = 280
+=======
+        var isSaving by remember { mutableStateOf(false) }
+        var customTweetText by remember { mutableStateOf("") }
+        
+        val MAX_TWEET_LENGTH = 280
+        
+        suspend fun saveRecording() {
+                if (audioFile == null || videoFile == null || amplitudesPath == null) return
+                
+                isSaving = true
+                statusMessage = "Saving recording..."
+                
+                runCatching {
+                        val assets = com.echox.app.domain.RecordingAssets(
+                                audioFile = audioFile!!,
+                                videoFile = videoFile!!,
+                                durationMs = durationMs,
+                                amplitudesFile = File(amplitudesPath!!)
+                        )
+                        
+                        val savedPaths = recordingPipeline.saveRecordingToPermanentStorage(assets)
+                        
+                        val recording = Recording(
+                                audioPath = savedPaths.audioPath,
+                                videoPath = savedPaths.videoPath,
+                                durationMs = durationMs,
+                                amplitudesPath = savedPaths.amplitudesPath,
+                                thumbnailPath = savedPaths.thumbnailPath
+                        )
+                        
+                        recordingRepository.insertRecording(recording)
+                }
+                        .onSuccess {
+                                statusMessage = "Recording saved!"
+                                Toast.makeText(context, "Recording saved to library", Toast.LENGTH_SHORT).show()
+                        }
+                        .onFailure { error ->
+                                statusMessage = "Failed to save: ${error.message}"
+                                Toast.makeText(context, "Failed to save recording", Toast.LENGTH_SHORT).show()
+                                android.util.Log.e("PreviewScreen", "Failed to save recording", error)
+                        }
+                        .also {
+                                isSaving = false
+                        }
+        }
+>>>>>>> 24c1f39 (feat: Add Recording History and Playback Library)
 
         Column(
                 modifier =
@@ -287,6 +342,12 @@ fun PreviewScreen(
                                                                                 Toast.LENGTH_SHORT
                                                                         )
                                                                         .show()
+                                                                
+                                                                // Save recording to database after successful share
+                                                                scope.launch {
+                                                                        saveRecording()
+                                                                }
+                                                                
                                                                 navController.navigate("record") {
                                                                         popUpTo("record") {
                                                                                 inclusive = true
@@ -322,6 +383,30 @@ fun PreviewScreen(
                                         style =
                                                 androidx.compose.material3.MaterialTheme.typography
                                                         .titleMedium
+                                )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                                onClick = {
+                                        scope.launch {
+                                                saveRecording()
+                                        }
+                                },
+                                enabled = !isSaving && audioFile != null && videoFile != null,
+                                modifier = Modifier.fillMaxWidth().height(56.dp),
+                                colors =
+                                        ButtonDefaults.buttonColors(
+                                                containerColor = Color.Transparent,
+                                                contentColor = Color.White.copy(alpha = 0.9f)
+                                        )
+                        ) {
+                                Text(
+                                        text = if (isSaving) "Saving..." else "Save to Library",
+                                        style =
+                                                androidx.compose.material3.MaterialTheme.typography
+                                                        .bodyLarge
                                 )
                         }
 

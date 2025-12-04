@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Stop
@@ -46,6 +47,7 @@ import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.echox.app.data.repository.RecordingRepository
 import com.echox.app.data.repository.XRepository
 import com.echox.app.domain.AudioRecorderManager
 import com.echox.app.domain.RecordingPipeline
@@ -54,7 +56,11 @@ import java.io.File
 import kotlinx.coroutines.launch
 
 @Composable
-fun RecordScreen(navController: NavController, repository: XRepository) {
+fun RecordScreen(
+        navController: NavController,
+        repository: XRepository,
+        recordingRepository: RecordingRepository
+) {
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
         val audioRecorderManager = remember { AudioRecorderManager() }
@@ -126,8 +132,8 @@ fun RecordScreen(navController: NavController, repository: XRepository) {
                         // Top Bar / Header
                         Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 16.dp)
                         ) {
                                 Text(
                                         text = user?.name ?: "EchoX",
@@ -136,26 +142,42 @@ fun RecordScreen(navController: NavController, repository: XRepository) {
                                                         .headlineMedium,
                                         color = Color.White.copy(alpha = 0.9f)
                                 )
-                                if (user != null) {
-                                        Spacer(modifier = Modifier.width(16.dp))
-                                        androidx.compose.material3.TextButton(
-                                                onClick = {
-                                                        scope.launch {
-                                                                repository.logout()
-                                                                // Navigation will auto-redirect to
-                                                                // Login due to LaunchedEffect in
-                                                                // Navigation.kt
-                                                        }
-                                                }
+                                
+                                Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                        // Library button
+                                        androidx.compose.material3.IconButton(
+                                                onClick = { navController.navigate("library") }
                                         ) {
-                                                Text(
-                                                        text = "Logout",
-                                                        color = Color(0xFF1d9bf0),
-                                                        style =
-                                                                androidx.compose.material3
-                                                                        .MaterialTheme.typography
-                                                                        .labelLarge
+                                                Icon(
+                                                        imageVector = Icons.Default.History,
+                                                        contentDescription = "Recordings Library",
+                                                        tint = Color(0xFF1d9bf0)
                                                 )
+                                        }
+                                        
+                                        if (user != null) {
+                                                androidx.compose.material3.TextButton(
+                                                        onClick = {
+                                                                scope.launch {
+                                                                        repository.logout()
+                                                                        // Navigation will auto-redirect to
+                                                                        // Login due to LaunchedEffect in
+                                                                        // Navigation.kt
+                                                                }
+                                                        }
+                                                ) {
+                                                        Text(
+                                                                text = "Logout",
+                                                                color = Color(0xFF1d9bf0),
+                                                                style =
+                                                                        androidx.compose.material3
+                                                                                .MaterialTheme.typography
+                                                                                .labelLarge
+                                                        )
+                                                }
                                         }
                                 }
                         }

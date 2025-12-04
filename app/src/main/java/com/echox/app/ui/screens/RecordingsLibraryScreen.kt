@@ -54,7 +54,9 @@ import com.echox.app.data.repository.RecordingRepository
 import com.echox.app.data.repository.XRepository
 import com.echox.app.domain.SharePipeline
 import java.io.File
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun RecordingsLibraryScreen(
@@ -184,21 +186,47 @@ fun RecordingsLibraryScreen(
                                                 },
                                                 onDeleteClick = {
                                                         scope.launch {
-                                                                runCatching {
-                                                                        // Delete files
-                                                                        File(recording.audioPath).delete()
-                                                                        File(recording.videoPath).delete()
-                                                                        File(recording.amplitudesPath).delete()
-                                                                        recording.thumbnailPath?.let { File(it).delete() }
-                                                                        
-                                                                        // Delete from database
-                                                                        recordingRepository.deleteRecording(recording)
-                                                                        
+                                                                val audioFile = File(recording.audioPath)
+                                                                val videoFile = File(recording.videoPath)
+                                                                val amplitudesFile = File(recording.amplitudesPath)
+                                                                val thumbnailFile = recording.thumbnailPath?.let { File(it) }
+                                                                
+                                                                // Delete files and track results
+                                                                val deleteResults = mutableListOf<Pair<String, Boolean>>()
+                                                                deleteResults.add("audio" to audioFile.delete())
+                                                                deleteResults.add("video" to videoFile.delete())
+                                                                deleteResults.add("amplitudes" to amplitudesFile.delete())
+                                                                thumbnailFile?.let { deleteResults.add("thumbnail" to it.delete()) }
+                                                                
+                                                                val failedDeletes = deleteResults.filter { !it.second }.map { it.first }
+                                                                
+                                                                if (failedDeletes.isNotEmpty()) {
+                                                                        // Some files failed to delete
+                                                                        val failedTypes = failedDeletes.joinToString(", ")
+                                                                        android.util.Log.w(
+                                                                                "RecordingsLibrary",
+                                                                                "Failed to delete files: $failedTypes for recording ${recording.id}"
+                                                                        )
                                                                         Toast.makeText(
                                                                                 context,
-                                                                                "Recording deleted",
-                                                                                Toast.LENGTH_SHORT
+                                                                                "Warning: Some files could not be deleted ($failedTypes)",
+                                                                                Toast.LENGTH_LONG
                                                                         ).show()
+                                                                        // Still delete from database to avoid showing broken entries
+                                                                        // but log the issue for debugging
+                                                                }
+                                                                
+                                                                // Delete from database
+                                                                runCatching {
+                                                                        recordingRepository.deleteRecording(recording)
+                                                                        
+                                                                        if (failedDeletes.isEmpty()) {
+                                                                                Toast.makeText(
+                                                                                        context,
+                                                                                        "Recording deleted",
+                                                                                        Toast.LENGTH_SHORT
+                                                                                ).show()
+                                                                        }
                                                                         
                                                                         if (selectedRecording?.id == recording.id) {
                                                                                 selectedRecording = null
@@ -208,7 +236,7 @@ fun RecordingsLibraryScreen(
                                                                         .onFailure { error ->
                                                                                 Toast.makeText(
                                                                                         context,
-                                                                                        "Failed to delete: ${error.message}",
+                                                                                        "Failed to delete from database: ${error.message}",
                                                                                         Toast.LENGTH_SHORT
                                                                                 ).show()
                                                                         }
@@ -368,37 +396,62 @@ private suspend fun shareRecording(
         avatarUrl: String?,
         context: android.content.Context
 ) {
-        val audioFile = File(recording.audioPath)
-        val videoFile = File(recording.videoPath)
-        val amplitudes =
-                runCatching {
-                                File(recording.amplitudesPath)
-                                        .readText()
-                                        .split(",")
-                                        .mapNotNull { it.toFloatOrNull() }
-                        }
-                        .getOrNull() ?: emptyList()
+        // Perform file IO operations on IO dispatcher
+        val (audioFile, videoFile, amplitudes) = withContext(Dispatchers.IO) {
+                val audio = File(recording.audioPath)
+                val video = File(recording.videoPath)
+                val amps =
+                        runCatching {
+                                        File(recording.amplitudesPath)
+                                                .readText()
+                                                .split(",")
+                                                .mapNotNull { it.toFloatOrNull() }
+                                }
+                                .getOrNull() ?: emptyList()
+                
+                Triple(audio, video, amps)
+        }
 
-        if (!audioFile.exists() || !videoFile.exists()) {
-                android.widget.Toast.makeText(
-                                context,
-                                "Recording files not found",
-                                android.widget.Toast.LENGTH_SHORT
-                        )
-                        .show()
+        // Check file existence on IO dispatcher
+        val filesExist = withContext(Dispatchers.IO) {
+                audioFile.exists() && videoFile.exists()
+        }
+
+        if (!filesExist) {
+                // Toast must be called on main dispatcher
+                withContext(Dispatchers.Main) {
+                        android.widget.Toast.makeText(
+                                        context,
+                                        "Recording files not found",
+                                        android.widget.Toast.LENGTH_SHORT
+                                )
+                                .show()
+                }
                 return
         }
 
-        sharePipeline.shareRecording(
-                user = user,
-                audioFile = audioFile,
-                previewVideoFile = videoFile,
-                durationMs = recording.durationMs,
-                avatarUrl = avatarUrl,
-                amplitudes = amplitudes,
-                onStatus = { status ->
-                        android.widget.Toast.makeText(context, status, android.widget.Toast.LENGTH_SHORT)
-                                .show()
-                }
-        )
+        // Share operation (likely involves network/IO) on IO dispatcher
+        // Note: onStatus callback may be called from IO thread, so we need to ensure
+        // Toast operations happen on main thread
+        withContext(Dispatchers.IO) {
+                sharePipeline.shareRecording(
+                        user = user,
+                        audioFile = audioFile,
+                        previewVideoFile = videoFile,
+                        durationMs = recording.durationMs,
+                        avatarUrl = avatarUrl,
+                        amplitudes = amplitudes,
+                        onStatus = { status ->
+                                // Toast must be called on main dispatcher
+                                // Use Handler to post to main thread from IO context
+                                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                                        android.widget.Toast.makeText(
+                                                context,
+                                                status,
+                                                android.widget.Toast.LENGTH_SHORT
+                                        ).show()
+                                }
+                        }
+                )
+        }
 }

@@ -11,15 +11,18 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.echox.app.data.repository.RecordingRepository
 import com.echox.app.data.repository.XRepository
 import com.echox.app.ui.screens.LoginScreen
 import com.echox.app.ui.screens.PreviewScreen
 import com.echox.app.ui.screens.RecordScreen
+import com.echox.app.ui.screens.RecordingsLibraryScreen
 
 @Composable
 fun Navigation() {
     val context = LocalContext.current
     val repository = remember { XRepository(context) }
+    val recordingRepository = remember { RecordingRepository(context) }
     val isAuthenticated by repository.isAuthenticated.collectAsState()
 
     val navController = rememberNavController()
@@ -39,7 +42,8 @@ fun Navigation() {
 
     NavHost(navController = navController, startDestination = "login") {
         composable("login") { LoginScreen(navController, repository) }
-        composable("record") { RecordScreen(navController, repository) }
+        composable("record") { RecordScreen(navController, repository, recordingRepository) }
+        composable("library") { RecordingsLibraryScreen(navController, repository, recordingRepository) }
         composable(
                 route =
                         "preview?audio={audio}&video={video}&duration={duration}&amplitudes={amplitudes}",

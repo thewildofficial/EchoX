@@ -16,11 +16,21 @@ import java.io.File
 import java.io.FileOutputStream
 import kotlin.math.sqrt
 
+enum class RecordingState {
+    Idle,
+    Recording,
+    Paused
+}
+
 class AudioRecorderManager {
 
     private var audioRecord: AudioRecord? = null
     private var recordingJob: Job? = null
-    private var isRecording = false
+    private var outputStream: FileOutputStream? = null
+    private var isPaused = false
+
+    private val _recordingState = MutableStateFlow<RecordingState>(RecordingState.Idle)
+    val recordingState: StateFlow<RecordingState> = _recordingState.asStateFlow()
 
     private val _amplitude = MutableStateFlow(0f)
     val amplitude: StateFlow<Float> = _amplitude.asStateFlow()
@@ -32,8 +42,9 @@ class AudioRecorderManager {
 
     @SuppressLint("MissingPermission")
     fun startRecording(outputFile: File, scope: CoroutineScope) {
-        if (isRecording) return
+        if (_recordingState.value != RecordingState.Idle) return
 
+        // Create new AudioRecord instance
         audioRecord = AudioRecord(
             MediaRecorder.AudioSource.MIC,
             sampleRate,
@@ -42,18 +53,28 @@ class AudioRecorderManager {
             bufferSize
         )
 
+        // Open file for new recording
+        outputStream = FileOutputStream(outputFile)
+
         audioRecord?.startRecording()
-        isRecording = true
+        isPaused = false
+        _recordingState.value = RecordingState.Recording
 
         recordingJob = scope.launch(Dispatchers.IO) {
             val data = ByteArray(bufferSize)
-            val outputStream = FileOutputStream(outputFile)
 
             try {
-                while (isActive && isRecording) {
+                while (isActive && _recordingState.value != RecordingState.Idle) {
+                    // Skip reading when paused
+                    if (isPaused) {
+                        _amplitude.value = 0f
+                        kotlinx.coroutines.delay(100)
+                        continue
+                    }
+
                     val read = audioRecord?.read(data, 0, bufferSize) ?: 0
                     if (read > 0) {
-                        outputStream.write(data, 0, read)
+                        outputStream?.write(data, 0, read)
                         
                         // Calculate Amplitude (RMS)
                         var sum = 0.0
@@ -69,13 +90,34 @@ class AudioRecorderManager {
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {
-                outputStream.close()
+                outputStream?.close()
+                outputStream = null
             }
         }
     }
 
+    fun pauseRecording() {
+        if (_recordingState.value == RecordingState.Recording) {
+            isPaused = true
+            _recordingState.value = RecordingState.Paused
+            // Stop reading but keep AudioRecord and FileOutputStream alive
+            audioRecord?.stop()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun resumeRecording() {
+        if (_recordingState.value == RecordingState.Paused && audioRecord != null) {
+            isPaused = false
+            _recordingState.value = RecordingState.Recording
+            // Resume reading from AudioRecord
+            audioRecord?.startRecording()
+        }
+    }
+
     fun stopRecording() {
-        isRecording = false
+        _recordingState.value = RecordingState.Idle
+        isPaused = false
         recordingJob?.cancel()
         try {
             audioRecord?.stop()
@@ -84,6 +126,8 @@ class AudioRecorderManager {
             e.printStackTrace()
         }
         audioRecord = null
+        outputStream?.close()
+        outputStream = null
     }
     companion object {
         const val SAMPLE_RATE = 44100

@@ -21,7 +21,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -51,6 +53,7 @@ import com.echox.app.data.repository.RecordingRepository
 import com.echox.app.data.repository.XRepository
 import com.echox.app.domain.AudioRecorderManager
 import com.echox.app.domain.RecordingPipeline
+import com.echox.app.domain.RecordingState
 import com.echox.app.ui.components.Waveform
 import java.io.File
 import kotlinx.coroutines.launch
@@ -67,13 +70,15 @@ fun RecordScreen(
         val recordingPipeline = remember { RecordingPipeline(context) }
         val user by repository.userProfile.collectAsState()
         val avatarUrl = user?.profile_image_url?.replace("_normal", "")
+        val recordingState by audioRecorderManager.recordingState.collectAsState()
 
-        var isRecording by remember { mutableStateOf(false) }
         var isGenerating by remember { mutableStateOf(false) }
         var statusMessage by remember { mutableStateOf("") }
         val amplitudes = remember { mutableStateListOf<Float>() }
         var currentRecordingFile by remember { mutableStateOf<File?>(null) }
         var recordingStartTime by remember { mutableStateOf<Long?>(null) }
+        var pausedTime by remember { mutableStateOf<Long?>(null) }
+        var totalPausedDuration by remember { mutableStateOf(0L) }
         var elapsedTime by remember { mutableStateOf(0L) }
 
         // Permission Launcher
@@ -89,8 +94,9 @@ fun RecordScreen(
                                                 )
                                         currentRecordingFile = file
                                         recordingStartTime = System.currentTimeMillis()
+                                        totalPausedDuration = 0L
+                                        pausedTime = null
                                         audioRecorderManager.startRecording(file, scope)
-                                        isRecording = true
                                         statusMessage = "Listening..."
                                         amplitudes.clear()
                                 } else {
@@ -100,20 +106,50 @@ fun RecordScreen(
                 )
 
         // Observe amplitude updates
-        LaunchedEffect(isRecording) {
-                if (isRecording) {
-                        audioRecorderManager.amplitude.collect { amp -> amplitudes.add(amp) }
+        LaunchedEffect(Unit) {
+                audioRecorderManager.amplitude.collect { amp -> 
+                        if (recordingState == RecordingState.Recording) {
+                                amplitudes.add(amp)
+                        }
                 }
         }
 
-        // Update elapsed time every second while recording
-        LaunchedEffect(isRecording, recordingStartTime) {
-                if (isRecording && recordingStartTime != null) {
-                        while (isRecording) {
-                                elapsedTime = System.currentTimeMillis() - recordingStartTime!!
-                                kotlinx.coroutines.delay(
-                                        100
-                                ) // Update 10x per second for smooth display
+        // Handle pause/resume time tracking
+        LaunchedEffect(recordingState) {
+                when (recordingState) {
+                        RecordingState.Paused -> {
+                                if (pausedTime == null) {
+                                        pausedTime = System.currentTimeMillis()
+                                }
+                        }
+                        RecordingState.Recording -> {
+                                if (pausedTime != null) {
+                                        totalPausedDuration += System.currentTimeMillis() - pausedTime!!
+                                        pausedTime = null
+                                }
+                        }
+                        RecordingState.Idle -> {
+                                pausedTime = null
+                                totalPausedDuration = 0L
+                        }
+                }
+        }
+
+        // Update elapsed time every 100ms while recording or paused
+        LaunchedEffect(recordingState, recordingStartTime, pausedTime, totalPausedDuration) {
+                val initialState = recordingState
+                if ((initialState == RecordingState.Recording || initialState == RecordingState.Paused) && recordingStartTime != null) {
+                        while (true) {
+                                val currentState = audioRecorderManager.recordingState.value
+                                if (currentState == RecordingState.Idle) break
+                                
+                                val currentPausedTime = if (currentState == RecordingState.Paused && pausedTime != null) {
+                                        System.currentTimeMillis() - pausedTime!!
+                                } else {
+                                        0L
+                                }
+                                elapsedTime = System.currentTimeMillis() - recordingStartTime!! - totalPausedDuration - currentPausedTime
+                                kotlinx.coroutines.delay(100) // Update 10x per second for smooth display
                         }
                 } else {
                         elapsedTime = 0L
@@ -229,12 +265,14 @@ fun RecordScreen(
                         // Bottom Controls
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 // Recording Timer
-                                if (isRecording) {
+                                if (recordingState != RecordingState.Idle) {
                                         val minutes = (elapsedTime / 1000) / 60
                                         val seconds = (elapsedTime / 1000) % 60
                                         Text(
                                                 text = String.format("%d:%02d", minutes, seconds),
-                                                color = Color(0xFF1DA1F2), // XBlue
+                                                color = if (recordingState == RecordingState.Paused) 
+                                                        Color(0xFFFFA500) // Orange when paused
+                                                else Color(0xFF1DA1F2), // XBlue when recording
                                                 style =
                                                         androidx.compose.material3.MaterialTheme
                                                                 .typography
@@ -253,7 +291,11 @@ fun RecordScreen(
                                                                 statusMessage.ifBlank {
                                                                         "Crafting your video..."
                                                                 }
-                                                        isRecording ->
+                                                        recordingState == RecordingState.Paused ->
+                                                                statusMessage.ifBlank {
+                                                                        "Paused"
+                                                                }
+                                                        recordingState == RecordingState.Recording ->
                                                                 statusMessage.ifBlank {
                                                                         "Recording..."
                                                                 }
@@ -267,138 +309,175 @@ fun RecordScreen(
                                         modifier = Modifier.padding(bottom = 32.dp)
                                 )
 
-                                Button(
-                                        onClick = {
-                                                if (isRecording) {
-                                                        val rawFile = currentRecordingFile
-                                                        if (rawFile != null) {
-                                                                audioRecorderManager.stopRecording()
-                                                                isRecording = false
-                                                                isGenerating = true
-                                                                statusMessage =
-                                                                        "Finalizing audio..."
-                                                                val duration =
-                                                                        (System.currentTimeMillis() -
-                                                                                        (recordingStartTime
-                                                                                                ?: System.currentTimeMillis()))
-                                                                                .coerceAtLeast(500L)
-                                                                scope.launch {
-                                                                        runCatching {
-                                                                                recordingPipeline
-                                                                                        .preparePreview(
-                                                                                                rawPcmFile =
-                                                                                                        rawFile,
-                                                                                                durationMs =
-                                                                                                        duration,
-                                                                                                avatarUrl =
-                                                                                                        avatarUrl,
-                                                                                                amplitudes =
-                                                                                                        amplitudes
-                                                                                                                .toList() // Pass copy of amplitudes
-                                                                                        )
-                                                                        }
-                                                                                .onSuccess { assets
-                                                                                        ->
-                                                                                        statusMessage =
-                                                                                                "Preview ready"
-                                                                                        val audioParam =
-                                                                                                Uri.encode(
-                                                                                                        assets.audioFile
-                                                                                                                .toUri()
-                                                                                                                .toString()
-                                                                                                )
-                                                                                        val videoParam =
-                                                                                                Uri.encode(
-                                                                                                        assets.videoFile
-                                                                                                                .toUri()
-                                                                                                                .toString()
-                                                                                                )
-                                                                                        isGenerating =
-                                                                                                false
-                                                                                        val amplitudesParam =
-                                                                                                Uri.encode(
-                                                                                                        assets.amplitudesFile
-                                                                                                                .absolutePath
-                                                                                                )
-                                                                                        navController
-                                                                                                .navigate(
-                                                                                                        "preview?audio=$audioParam&video=$videoParam&duration=${assets.durationMs}&amplitudes=$amplitudesParam"
-                                                                                                )
-                                                                                }
-                                                                                .onFailure { error
-                                                                                        ->
-                                                                                        android.util
-                                                                                                .Log
-                                                                                                .e(
-                                                                                                        "EchoX_Error",
-                                                                                                        "Video generation failed",
-                                                                                                        error
-                                                                                                )
-                                                                                        error.printStackTrace()
-                                                                                        statusMessage =
-                                                                                                "Unable to process recording: ${error.message}"
-                                                                                        isGenerating =
-                                                                                                false
-                                                                                }
-                                                                }
-                                                        }
-                                                } else {
-                                                        val permissionCheck =
-                                                                ContextCompat.checkSelfPermission(
-                                                                        context,
-                                                                        Manifest.permission
-                                                                                .RECORD_AUDIO
-                                                                )
-                                                        if (permissionCheck ==
-                                                                        PackageManager
-                                                                                .PERMISSION_GRANTED
-                                                        ) {
-                                                                val file =
-                                                                        File(
-                                                                                context.cacheDir,
-                                                                                "recording_${System.currentTimeMillis()}.pcm"
-                                                                        )
-                                                                currentRecordingFile = file
-                                                                recordingStartTime =
-                                                                        System.currentTimeMillis()
-                                                                audioRecorderManager.startRecording(
-                                                                        file,
-                                                                        scope
-                                                                )
-                                                                isRecording = true
-                                                                statusMessage = "Listening..."
-                                                                amplitudes.clear()
-                                                        } else {
-                                                                permissionLauncher.launch(
-                                                                        Manifest.permission
-                                                                                .RECORD_AUDIO
-                                                                )
-                                                        }
-                                                }
-                                        },
-                                        shape = CircleShape,
-                                        colors =
-                                                ButtonDefaults.buttonColors(
-                                                        containerColor =
-                                                                if (isRecording)
-                                                                        Color(0xFFFF3B30) // iOS Red
-                                                                else Color(0xFF1d9bf0) // XBlue
-                                                ),
-                                        modifier = Modifier.size(80.dp),
-                                        elevation =
-                                                ButtonDefaults.buttonElevation(
-                                                        defaultElevation = 12.dp
-                                                ),
-                                        enabled = !isGenerating
+                                // Control buttons row
+                                Row(
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                        Icon(
-                                                imageVector =
-                                                        if (isRecording) Icons.Default.Stop
-                                                        else Icons.Default.Mic,
-                                                contentDescription = "Record",
-                                                tint = Color.White,
-                                                modifier = Modifier.size(36.dp)
-                                        )
+                                        // Pause/Resume button (only shown when recording)
+                                        if (recordingState == RecordingState.Recording || recordingState == RecordingState.Paused) {
+                                                Button(
+                                                        onClick = {
+                                                                if (recordingState == RecordingState.Recording) {
+                                                                        audioRecorderManager.pauseRecording()
+                                                                } else if (recordingState == RecordingState.Paused) {
+                                                                        audioRecorderManager.resumeRecording()
+                                                                }
+                                                        },
+                                                        shape = CircleShape,
+                                                        colors =
+                                                                ButtonDefaults.buttonColors(
+                                                                        containerColor = Color(0xFFFFA500) // Orange
+                                                                ),
+                                                        modifier = Modifier.size(64.dp),
+                                                        elevation =
+                                                                ButtonDefaults.buttonElevation(
+                                                                        defaultElevation = 12.dp
+                                                                ),
+                                                        enabled = !isGenerating
+                                                ) {
+                                                        Icon(
+                                                                imageVector =
+                                                                        if (recordingState == RecordingState.Recording) Icons.Default.Pause
+                                                                        else Icons.Default.PlayArrow,
+                                                                contentDescription = if (recordingState == RecordingState.Recording) "Pause" else "Resume",
+                                                                tint = Color.White,
+                                                                modifier = Modifier.size(28.dp)
+                                                        )
+                                                }
+                                        }
+
+                                        // Stop/Start button
+                                        Button(
+                                                onClick = {
+                                                        if (recordingState != RecordingState.Idle) {
+                                                                val rawFile = currentRecordingFile
+                                                                if (rawFile != null) {
+                                                                        audioRecorderManager.stopRecording()
+                                                                        isGenerating = true
+                                                                        statusMessage =
+                                                                                "Finalizing audio..."
+                                                                        val duration =
+                                                                                elapsedTime.coerceAtLeast(500L)
+                                                                        scope.launch {
+                                                                                runCatching {
+                                                                                        recordingPipeline
+                                                                                                .preparePreview(
+                                                                                                        rawPcmFile =
+                                                                                                                rawFile,
+                                                                                                        durationMs =
+                                                                                                                duration,
+                                                                                                        avatarUrl =
+                                                                                                                avatarUrl,
+                                                                                                        amplitudes =
+                                                                                                                amplitudes
+                                                                                                                        .toList() // Pass copy of amplitudes
+                                                                                                )
+                                                                                }
+                                                                                        .onSuccess { assets
+                                                                                                ->
+                                                                                                statusMessage =
+                                                                                                        "Preview ready"
+                                                                                                val audioParam =
+                                                                                                        Uri.encode(
+                                                                                                                assets.audioFile
+                                                                                                                        .toUri()
+                                                                                                                        .toString()
+                                                                                                        )
+                                                                                                val videoParam =
+                                                                                                        Uri.encode(
+                                                                                                                assets.videoFile
+                                                                                                                        .toUri()
+                                                                                                                        .toString()
+                                                                                                        )
+                                                                                                isGenerating =
+                                                                                                        false
+                                                                                                val amplitudesParam =
+                                                                                                        Uri.encode(
+                                                                                                                assets.amplitudesFile
+                                                                                                                        .absolutePath
+                                                                                                        )
+                                                                                                navController
+                                                                                                        .navigate(
+                                                                                                                "preview?audio=$audioParam&video=$videoParam&duration=${assets.durationMs}&amplitudes=$amplitudesParam"
+                                                                                                        )
+                                                                                        }
+                                                                                        .onFailure { error
+                                                                                                ->
+                                                                                                android.util
+                                                                                                        .Log
+                                                                                                        .e(
+                                                                                                                "EchoX_Error",
+                                                                                                                "Video generation failed",
+                                                                                                                error
+                                                                                                        )
+                                                                                                error.printStackTrace()
+                                                                                                statusMessage =
+                                                                                                        "Unable to process recording: ${error.message}"
+                                                                                                isGenerating =
+                                                                                                        false
+                                                                                        }
+                                                                                }
+                                                                        }
+                                                                } else {
+                                                                        val permissionCheck =
+                                                                                ContextCompat.checkSelfPermission(
+                                                                                        context,
+                                                                                        Manifest.permission
+                                                                                                .RECORD_AUDIO
+                                                                                )
+                                                                        if (permissionCheck ==
+                                                                                        PackageManager
+                                                                                                .PERMISSION_GRANTED
+                                                                        ) {
+                                                                                val file =
+                                                                                        File(
+                                                                                                context.cacheDir,
+                                                                                                "recording_${System.currentTimeMillis()}.pcm"
+                                                                                        )
+                                                                                currentRecordingFile = file
+                                                                                recordingStartTime =
+                                                                                        System.currentTimeMillis()
+                                                                                totalPausedDuration = 0L
+                                                                                pausedTime = null
+                                                                                audioRecorderManager.startRecording(
+                                                                                        file,
+                                                                                        scope
+                                                                                )
+                                                                                statusMessage = "Listening..."
+                                                                                amplitudes.clear()
+                                                                        } else {
+                                                                                permissionLauncher.launch(
+                                                                                        Manifest.permission
+                                                                                                .RECORD_AUDIO
+                                                                                )
+                                                                        }
+                                                                }
+                                                        },
+                                                shape = CircleShape,
+                                                colors =
+                                                        ButtonDefaults.buttonColors(
+                                                                containerColor =
+                                                                        if (recordingState != RecordingState.Idle)
+                                                                                Color(0xFFFF3B30) // iOS Red
+                                                                        else Color(0xFF1d9bf0) // XBlue
+                                                        ),
+                                                modifier = Modifier.size(80.dp),
+                                                elevation =
+                                                        ButtonDefaults.buttonElevation(
+                                                                defaultElevation = 12.dp
+                                                        ),
+                                                enabled = !isGenerating
+                                        ) {
+                                                Icon(
+                                                        imageVector =
+                                                                if (recordingState != RecordingState.Idle) Icons.Default.Stop
+                                                                else Icons.Default.Mic,
+                                                        contentDescription = if (recordingState != RecordingState.Idle) "Stop" else "Record",
+                                                        tint = Color.White,
+                                                        modifier = Modifier.size(36.dp)
+                                                )
+                                        }
                                 }
                         }
                 }

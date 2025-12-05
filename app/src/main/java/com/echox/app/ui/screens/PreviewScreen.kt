@@ -22,9 +22,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 <<<<<<< HEAD
+<<<<<<< HEAD
 import androidx.compose.ui.text.input.ImeAction
 =======
 >>>>>>> 24c1f39 (feat: Add Recording History and Playback Library)
+=======
+=======
+import androidx.compose.ui.text.input.ImeAction
+>>>>>>> 89fdcbc (Add custom tweet text entry on preview)
+>>>>>>> 0e99700 (Add custom tweet text entry on preview)
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -102,10 +108,13 @@ fun PreviewScreen(
         var statusMessage by remember { mutableStateOf("") }
         var isSharing by remember { mutableStateOf(false) }
 <<<<<<< HEAD
+<<<<<<< HEAD
         var customTweetText by remember { mutableStateOf("") }
         
         val MAX_TWEET_LENGTH = 280
 =======
+=======
+>>>>>>> 0e99700 (Add custom tweet text entry on preview)
         var isSaving by remember { mutableStateOf(false) }
         var customTweetText by remember { mutableStateOf("") }
         
@@ -150,7 +159,15 @@ fun PreviewScreen(
                                 isSaving = false
                         }
         }
+<<<<<<< HEAD
 >>>>>>> 24c1f39 (feat: Add Recording History and Playback Library)
+=======
+=======
+        var customTweetText by remember { mutableStateOf("") }
+        
+        val MAX_TWEET_LENGTH = 280
+>>>>>>> 89fdcbc (Add custom tweet text entry on preview)
+>>>>>>> 0e99700 (Add custom tweet text entry on preview)
 
         Column(
                 modifier =

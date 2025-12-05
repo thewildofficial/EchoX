@@ -76,23 +76,27 @@ fun RecordScreen(navController: NavController, repository: XRepository) {
         var elapsedTime by remember { mutableStateOf(0L) }
 
         // Permission Launcher
+        val startRecordingSession = {
+                val file =
+                        File(
+                                context.cacheDir,
+                                "recording_${System.currentTimeMillis()}.pcm"
+                        )
+                currentRecordingFile = file
+                recordingStartTime = System.currentTimeMillis()
+                totalPausedDuration = 0L
+                pausedTime = null
+                audioRecorderManager.startRecording(file, scope)
+                statusMessage = "Listening..."
+                amplitudes.clear()
+        }
+
         val permissionLauncher =
                 rememberLauncherForActivityResult(
                         contract = ActivityResultContracts.RequestPermission(),
                         onResult = { isGranted ->
                                 if (isGranted) {
-                                        val file =
-                                                File(
-                                                        context.cacheDir,
-                                                        "recording_${System.currentTimeMillis()}.pcm"
-                                                )
-                                        currentRecordingFile = file
-                                        recordingStartTime = System.currentTimeMillis()
-                                        totalPausedDuration = 0L
-                                        pausedTime = null
-                                        audioRecorderManager.startRecording(file, scope)
-                                        statusMessage = "Listening..."
-                                        amplitudes.clear()
+                                        startRecordingSession()
                                 } else {
                                         // Handle permission denied
                                 }
@@ -100,11 +104,15 @@ fun RecordScreen(navController: NavController, repository: XRepository) {
                 )
 
         // Observe amplitude updates
-        LaunchedEffect(Unit) {
-                audioRecorderManager.amplitude.collect { amp -> 
-                        if (recordingState == RecordingState.Recording) {
-                                amplitudes.add(amp)
+        LaunchedEffect(recordingState) {
+                if (recordingState != RecordingState.Idle) {
+                        audioRecorderManager.amplitude.collect { amp ->
+                                if (recordingState == RecordingState.Recording) {
+                                        amplitudes.add(amp)
+                                }
                         }
+                } else {
+                        amplitudes.clear()
                 }
         }
 
@@ -136,13 +144,16 @@ fun RecordScreen(navController: NavController, repository: XRepository) {
                         while (true) {
                                 val currentState = audioRecorderManager.recordingState.value
                                 if (currentState == RecordingState.Idle) break
-                                
-                                val currentPausedTime = if (currentState == RecordingState.Paused && pausedTime != null) {
-                                        System.currentTimeMillis() - pausedTime!!
-                                } else {
-                                        0L
-                                }
-                                elapsedTime = System.currentTimeMillis() - recordingStartTime!! - totalPausedDuration - currentPausedTime
+
+                                val currentPausedTime =
+                                        if (currentState == RecordingState.Paused && pausedTime != null) {
+                                                System.currentTimeMillis() - pausedTime!!
+                                        } else {
+                                                0L
+                                        }
+                                elapsedTime =
+                                        (System.currentTimeMillis() - recordingStartTime!! - totalPausedDuration - currentPausedTime)
+                                                .coerceAtLeast(0L)
                                 kotlinx.coroutines.delay(100) // Update 10x per second for smooth display
                         }
                 } else {
@@ -397,41 +408,27 @@ fun RecordScreen(navController: NavController, repository: XRepository) {
                                                                                         }
                                                                                 }
                                                                         }
-                                                                } else {
-                                                                        val permissionCheck =
-                                                                                ContextCompat.checkSelfPermission(
-                                                                                        context,
-                                                                                        Manifest.permission
-                                                                                                .RECORD_AUDIO
-                                                                                )
-                                                                        if (permissionCheck ==
-                                                                                        PackageManager
-                                                                                                .PERMISSION_GRANTED
-                                                                        ) {
-                                                                                val file =
-                                                                                        File(
-                                                                                                context.cacheDir,
-                                                                                                "recording_${System.currentTimeMillis()}.pcm"
-                                                                                        )
-                                                                                currentRecordingFile = file
-                                                                                recordingStartTime =
-                                                                                        System.currentTimeMillis()
-                                                                                totalPausedDuration = 0L
-                                                                                pausedTime = null
-                                                                                audioRecorderManager.startRecording(
-                                                                                        file,
-                                                                                        scope
-                                                                                )
-                                                                                statusMessage = "Listening..."
-                                                                                amplitudes.clear()
-                                                                        } else {
-                                                                                permissionLauncher.launch(
-                                                                                        Manifest.permission
-                                                                                                .RECORD_AUDIO
-                                                                                )
-                                                                        }
                                                                 }
-                                                        },
+                                                        } else {
+                                                                val permissionCheck =
+                                                                        ContextCompat.checkSelfPermission(
+                                                                                context,
+                                                                                Manifest.permission
+                                                                                        .RECORD_AUDIO
+                                                                        )
+                                                                if (permissionCheck ==
+                                                                                PackageManager
+                                                                                        .PERMISSION_GRANTED
+                                                                ) {
+                                                                        startRecordingSession()
+                                                                } else {
+                                                                        permissionLauncher.launch(
+                                                                                Manifest.permission
+                                                                                        .RECORD_AUDIO
+                                                                        )
+                                                                }
+                                                        }
+                                                },
                                                 shape = CircleShape,
                                                 colors =
                                                         ButtonDefaults.buttonColors(

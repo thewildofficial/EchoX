@@ -17,6 +17,7 @@ import com.echox.app.ui.screens.LoginScreen
 import com.echox.app.ui.screens.PreviewScreen
 import com.echox.app.ui.screens.RecordScreen
 import com.echox.app.ui.screens.RecordingsLibraryScreen
+import com.echox.app.ui.screens.SettingsScreen
 
 @Composable
 fun Navigation() {
@@ -44,6 +45,7 @@ fun Navigation() {
         composable("login") { LoginScreen(navController, repository) }
         composable("record") { RecordScreen(navController, repository, recordingRepository) }
         composable("library") { RecordingsLibraryScreen(navController, repository, recordingRepository) }
+        composable("settings") { SettingsScreen(navController, repository) }
         composable(
                 route =
                         "preview?audio={audio}&video={video}&duration={duration}&amplitudes={amplitudes}",

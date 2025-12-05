@@ -25,7 +25,8 @@ class SharePipeline(private val context: Context, private val repository: XRepos
             avatarUrl: String?,
             amplitudes: List<Float>,
             onStatus: (String) -> Unit,
-            preferXThread: Boolean = true
+            preferXThread: Boolean = true,
+            customText: String? = null
     ) {
         val maxDurationMs = STANDARD_DURATION_LIMIT_SEC * 1000L
 
@@ -55,10 +56,11 @@ class SharePipeline(private val context: Context, private val repository: XRepos
             // Get user's OAuth access token
             val accessToken = repository.getAccessToken()!!
             onStatus("Posting thread to X...")
+            val baseText = customText?.takeIf { it.isNotBlank() } ?: "Check out my audio recording!"
             val success =
                     xApiService.postThread(
                             videos = videos,
-                            baseText = "Check out my audio recording!",
+                            baseText = baseText,
                             accessToken = accessToken,
                             onProgress = onStatus
                     )

@@ -13,9 +13,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
@@ -86,6 +93,9 @@ fun PreviewScreen(
 
         var statusMessage by remember { mutableStateOf("") }
         var isSharing by remember { mutableStateOf(false) }
+        var customTweetText by remember { mutableStateOf("") }
+        
+        val MAX_TWEET_LENGTH = 280
 
         Column(
                 modifier =
@@ -159,6 +169,60 @@ fun PreviewScreen(
                         modifier = Modifier.padding(top = 8.dp)
                 )
 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Custom Tweet Text Input
+                Column(modifier = Modifier.fillMaxWidth()) {
+                        TextField(
+                                value = customTweetText,
+                                onValueChange = { newText ->
+                                        if (newText.length <= MAX_TWEET_LENGTH) {
+                                                customTweetText = newText
+                                        }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                placeholder = {
+                                        Text(
+                                                text = "Add your message, hashtags, or context...",
+                                                color = Color.White.copy(alpha = 0.5f)
+                                        )
+                                },
+                                maxLines = 4,
+                                colors =
+                                        TextFieldDefaults.colors(
+                                                focusedTextColor = Color.White,
+                                                unfocusedTextColor = Color.White,
+                                                focusedContainerColor = Color(0xFF1e2732),
+                                                unfocusedContainerColor = Color(0xFF1e2732),
+                                                focusedIndicatorColor = Color(0xFF1d9bf0),
+                                                unfocusedIndicatorColor = Color.White.copy(alpha = 0.3f),
+                                                cursorColor = Color(0xFF1d9bf0)
+                                        ),
+                                shape = RoundedCornerShape(12.dp),
+                                keyboardOptions =
+                                        KeyboardOptions(
+                                                keyboardType = KeyboardType.Text,
+                                                imeAction = ImeAction.Done
+                                        )
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                                text = "${customTweetText.length}/$MAX_TWEET_LENGTH",
+                                color =
+                                        if (customTweetText.length > MAX_TWEET_LENGTH) {
+                                                Color.Red
+                                        } else {
+                                                Color.White.copy(alpha = 0.6f)
+                                        },
+                                style =
+                                        androidx.compose.material3.MaterialTheme.typography
+                                                .bodySmall,
+                                modifier = Modifier.align(Alignment.End)
+                        )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Column(modifier = Modifier.fillMaxWidth()) {
                         Button(
                                 onClick = {
@@ -211,7 +275,8 @@ fun PreviewScreen(
                                                                                         Toast.LENGTH_LONG
                                                                                 )
                                                                                 .show()
-                                                                }
+                                                                },
+                                                                customText = customTweetText.takeIf { it.isNotBlank() }
                                                         )
                                                 }
                                                         .onSuccess {

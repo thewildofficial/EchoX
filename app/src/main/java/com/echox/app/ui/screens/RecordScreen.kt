@@ -317,7 +317,6 @@ fun RecordScreen(
                                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                        // Pause/Resume button (only shown when recording)
                                 if (
                                         recordingState == RecordingState.Recording ||
                                                 recordingState == RecordingState.Paused

@@ -49,6 +49,8 @@ import com.echox.app.domain.SharePipeline
 import java.io.File
 import kotlinx.coroutines.launch
 
+private const val MAX_TWEET_LENGTH = 280
+
 @Composable
 fun PreviewScreen(
         navController: NavController,
@@ -99,15 +101,13 @@ fun PreviewScreen(
         var isSharing by remember { mutableStateOf(false) }
         var isSaving by remember { mutableStateOf(false) }
         var customTweetText by remember { mutableStateOf("") }
-        
-        val MAX_TWEET_LENGTH = 280
-        
+
         suspend fun saveRecording() {
                 if (audioFile == null || videoFile == null || amplitudesPath == null) return
-                
+
                 isSaving = true
                 statusMessage = "Saving recording..."
-                
+
                 runCatching {
                         val assets = com.echox.app.domain.RecordingAssets(
                                 audioFile = audioFile!!,
@@ -115,9 +115,9 @@ fun PreviewScreen(
                                 durationMs = durationMs,
                                 amplitudesFile = File(amplitudesPath!!)
                         )
-                        
+
                         val savedPaths = recordingPipeline.saveRecordingToPermanentStorage(assets)
-                        
+
                         val recording = Recording(
                                 audioPath = savedPaths.audioPath,
                                 videoPath = savedPaths.videoPath,
@@ -125,7 +125,7 @@ fun PreviewScreen(
                                 amplitudesPath = savedPaths.amplitudesPath,
                                 thumbnailPath = savedPaths.thumbnailPath
                         )
-                        
+
                         recordingRepository.insertRecording(recording)
                 }
                         .onSuccess {
@@ -214,6 +214,57 @@ fun PreviewScreen(
                         modifier = Modifier.padding(top = 8.dp)
                 )
 
+                // Custom tweet text box
+                Column(modifier = Modifier.fillMaxWidth()) {
+                        TextField(
+                                value = customTweetText,
+                                onValueChange = { newText ->
+                                        if (newText.length <= MAX_TWEET_LENGTH) {
+                                                customTweetText = newText
+                                        }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                placeholder = {
+                                        Text(
+                                                text = "Add your message, hashtags, or context...",
+                                                color = Color.White.copy(alpha = 0.5f)
+                                        )
+                                },
+                                maxLines = 4,
+                                colors =
+                                        TextFieldDefaults.colors(
+                                                focusedTextColor = Color.White,
+                                                unfocusedTextColor = Color.White,
+                                                focusedContainerColor = Color(0xFF1e2732),
+                                                unfocusedContainerColor = Color(0xFF1e2732),
+                                                focusedIndicatorColor = Color(0xFF1d9bf0),
+                                                unfocusedIndicatorColor = Color.White.copy(alpha = 0.3f),
+                                                cursorColor = Color(0xFF1d9bf0)
+                                        ),
+                                shape = RoundedCornerShape(12.dp),
+                                keyboardOptions =
+                                        KeyboardOptions(
+                                                keyboardType = KeyboardType.Text
+                                        )
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                                text = "${customTweetText.length}/$MAX_TWEET_LENGTH",
+                                color =
+                                        if (customTweetText.length > MAX_TWEET_LENGTH) {
+                                                Color.Red
+                                        } else {
+                                                Color.White.copy(alpha = 0.6f)
+                                        },
+                                style =
+                                        androidx.compose.material3.MaterialTheme.typography
+                                                .bodySmall,
+                                modifier = Modifier.align(Alignment.End)
+                        )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Column(modifier = Modifier.fillMaxWidth()) {
                         Button(
                                 onClick = {
@@ -266,7 +317,8 @@ fun PreviewScreen(
                                                                                         Toast.LENGTH_LONG
                                                                                 )
                                                                                 .show()
-                                                                }
+                                                                },
+                                                                customText = customTweetText.takeIf { it.isNotBlank() }
                                                         )
                                                 }
                                                         .onSuccess {
@@ -277,12 +329,12 @@ fun PreviewScreen(
                                                                                 Toast.LENGTH_SHORT
                                                                         )
                                                                         .show()
-                                                                
+
                                                                 // Save recording to database after successful share
                                                                 scope.launch {
                                                                         saveRecording()
                                                                 }
-                                                                
+
                                                                 navController.navigate("record") {
                                                                         popUpTo("record") {
                                                                                 inclusive = true

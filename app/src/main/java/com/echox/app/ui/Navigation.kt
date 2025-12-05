@@ -35,7 +35,7 @@ fun Navigation() {
                 launchSingleTop = true
             }
         }
-        if (isAuthenticated) {
+        if (isAuthenticated && repository.userProfile.value == null) {
             repository.refreshUserProfile(context)
         }
     }

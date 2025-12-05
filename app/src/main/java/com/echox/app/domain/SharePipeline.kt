@@ -60,7 +60,12 @@ class SharePipeline(private val context: Context, private val repository: XRepos
             val success =
                     xApiService.postThread(
                             videos = videos,
+<<<<<<< HEAD
                             baseText = baseText,
+=======
+                            baseText = customText?.takeIf { it.isNotBlank() }
+                                    ?: "Check out my audio recording!",
+>>>>>>> 51b1797 (Add custom tweet text and soften profile rate limits)
                             accessToken = accessToken,
                             onProgress = onStatus
                     )
@@ -84,7 +89,7 @@ class SharePipeline(private val context: Context, private val repository: XRepos
         val debugInfo =
                 "Debug: PreferX=$preferXThread, User=${if (user!=null) "OK" else "NULL"}, Videos=${videos.size}"
         onStatus("Opening share sheet... ($debugInfo)")
-        shareFiles(videos)
+        shareFiles(videos, customText)
         onStatus("Shared!")
     }
 
@@ -118,7 +123,7 @@ class SharePipeline(private val context: Context, private val repository: XRepos
         return segments
     }
 
-    private fun shareFiles(files: List<File>) {
+    private fun shareFiles(files: List<File>, shareText: String?) {
         val uris = ArrayList<Uri>()
         files.forEach { file ->
             val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
@@ -135,6 +140,9 @@ class SharePipeline(private val context: Context, private val repository: XRepos
                         action = Intent.ACTION_SEND_MULTIPLE
                         putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
                         type = "video/mp4"
+                    }
+                    if (!shareText.isNullOrBlank()) {
+                        putExtra(Intent.EXTRA_TEXT, shareText)
                     }
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

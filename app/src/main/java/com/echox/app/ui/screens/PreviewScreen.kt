@@ -21,7 +21,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+<<<<<<< HEAD
 import androidx.compose.ui.text.input.ImeAction
+=======
+>>>>>>> 51b1797 (Add custom tweet text and soften profile rate limits)
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -46,6 +49,8 @@ import com.echox.app.data.repository.XRepository
 import com.echox.app.domain.SharePipeline
 import java.io.File
 import kotlinx.coroutines.launch
+
+private const val MAX_TWEET_LENGTH = 280
 
 @Composable
 fun PreviewScreen(
@@ -94,8 +99,11 @@ fun PreviewScreen(
         var statusMessage by remember { mutableStateOf("") }
         var isSharing by remember { mutableStateOf(false) }
         var customTweetText by remember { mutableStateOf("") }
+<<<<<<< HEAD
         
         val MAX_TWEET_LENGTH = 280
+=======
+>>>>>>> 51b1797 (Add custom tweet text and soften profile rate limits)
 
         Column(
                 modifier =
@@ -169,9 +177,13 @@ fun PreviewScreen(
                         modifier = Modifier.padding(top = 8.dp)
                 )
 
+<<<<<<< HEAD
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Custom Tweet Text Input
+=======
+                // Custom tweet text box
+>>>>>>> 51b1797 (Add custom tweet text and soften profile rate limits)
                 Column(modifier = Modifier.fillMaxWidth()) {
                         TextField(
                                 value = customTweetText,
@@ -201,8 +213,12 @@ fun PreviewScreen(
                                 shape = RoundedCornerShape(12.dp),
                                 keyboardOptions =
                                         KeyboardOptions(
+<<<<<<< HEAD
                                                 keyboardType = KeyboardType.Text,
                                                 imeAction = ImeAction.Done
+=======
+                                                keyboardType = KeyboardType.Text
+>>>>>>> 51b1797 (Add custom tweet text and soften profile rate limits)
                                         )
                         )
                         Spacer(modifier = Modifier.height(4.dp))

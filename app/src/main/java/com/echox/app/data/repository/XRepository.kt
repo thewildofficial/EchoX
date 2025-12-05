@@ -116,14 +116,19 @@ class XRepository(context: Context) {
                         .show()
             }
         } catch (error: Exception) {
+            val isRateLimited =
+                    (error as? retrofit2.HttpException)?.code() == 429 ||
+                            (error.message?.contains("429") == true)
+            val msg =
+                    if (isRateLimited) {
+                        "Rate limited (429) when fetching profile. Using cached data."
+                    } else {
+                        "[FETCH ERROR] ${error.message}"
+                    }
             context?.let {
-                android.widget.Toast.makeText(
-                                it,
-                                "[FETCH ERROR] ${error.message}",
-                                android.widget.Toast.LENGTH_LONG
-                        )
-                        .show()
+                android.widget.Toast.makeText(it, msg, android.widget.Toast.LENGTH_LONG).show()
             }
+            // Keep cached profile; do not clear on failure
             error.printStackTrace()
         }
     }

@@ -56,16 +56,11 @@ class SharePipeline(private val context: Context, private val repository: XRepos
             // Get user's OAuth access token
             val accessToken = repository.getAccessToken()!!
             onStatus("Posting thread to X...")
-            val baseText = customText?.takeIf { it.isNotBlank() } ?: "Check out my audio recording!"
             val success =
                     xApiService.postThread(
                             videos = videos,
-<<<<<<< HEAD
-                            baseText = baseText,
-=======
                             baseText = customText?.takeIf { it.isNotBlank() }
                                     ?: "Check out my audio recording!",
->>>>>>> 51b1797 (Add custom tweet text and soften profile rate limits)
                             accessToken = accessToken,
                             onProgress = onStatus
                     )

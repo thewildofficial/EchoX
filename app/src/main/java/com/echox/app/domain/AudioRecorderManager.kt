@@ -70,33 +70,42 @@ class AudioRecorderManager {
 
         recordingJob = scope.launch(Dispatchers.IO) {
             val data = ByteArray(bufferSize)
+            val silenceBuffer = ByteArray(bufferSize)
 
             try {
                 while (isActive) {
-                    when (_recordingState.value) {
-                        RecordingState.Idle -> break
+                    val state = _recordingState.value
+                    if (state == RecordingState.Idle) break
+
+                    val read = audioRecord?.read(data, 0, bufferSize) ?: 0
+                    if (read <= 0) continue
+
+                    when (state) {
                         RecordingState.Paused -> {
+                            // Keep AudioRecord running but write silence to preserve timestamps
+                            synchronized(outputStreamLock) {
+                                outputStream?.write(silenceBuffer, 0, read)
+                            }
                             _amplitude.value = 0f
-                            kotlinx.coroutines.delay(100)
                         }
                         RecordingState.Recording -> {
-                            val read = audioRecord?.read(data, 0, bufferSize) ?: 0
-                            if (read > 0) {
-                                synchronized(outputStreamLock) {
-                                    outputStream?.write(data, 0, read)
-                                }
-
-                                // Calculate Amplitude (RMS)
-                                var sum = 0.0
-                                for (i in 0 until read step 2) {
-                                    // PCM 16-bit is 2 bytes per sample
-                                    val sample =
-                                        (data[i].toInt() and 0xFF) or (data[i + 1].toInt() shl 8)
-                                    sum += sample * sample
-                                }
-                                val rms = sqrt(sum / (read / 2))
-                                _amplitude.value = rms.toFloat()
+                            synchronized(outputStreamLock) {
+                                outputStream?.write(data, 0, read)
                             }
+
+                            // Calculate Amplitude (RMS)
+                            var sum = 0.0
+                            for (i in 0 until read step 2) {
+                                // PCM 16-bit is 2 bytes per sample
+                                val sample =
+                                    (data[i].toInt() and 0xFF) or (data[i + 1].toInt() shl 8)
+                                sum += sample * sample
+                            }
+                            val rms = sqrt(sum / (read / 2))
+                            _amplitude.value = rms.toFloat()
+                        }
+                        else -> {
+                            // Idle handled above
                         }
                     }
                 }
@@ -111,8 +120,8 @@ class AudioRecorderManager {
     fun pauseRecording() {
         if (_recordingState.value == RecordingState.Recording) {
             _recordingState.value = RecordingState.Paused
-            // Stop reading but keep AudioRecord and FileOutputStream alive
-            runCatching { audioRecord?.stop() }.onFailure { it.printStackTrace() }
+            // Keep AudioRecord running; the read loop will write silence
+            _amplitude.value = 0f
         }
     }
 
@@ -121,11 +130,12 @@ class AudioRecorderManager {
         val ar = audioRecord
         if (_recordingState.value == RecordingState.Paused &&
             ar != null &&
-            ar.state == AudioRecord.STATE_INITIALIZED &&
-            ar.recordingState != AudioRecord.RECORDSTATE_RECORDING
+            ar.state == AudioRecord.STATE_INITIALIZED
         ) {
             try {
-                ar.startRecording()
+                if (ar.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
+                    ar.startRecording()
+                }
                 _recordingState.value = RecordingState.Recording
             } catch (e: Exception) {
                 e.printStackTrace()
